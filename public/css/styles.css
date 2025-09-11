@@ -1,0 +1,546 @@
+/* Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Segoe+UI:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
+body {
+  margin: 0; background: #f6f7fb;
+  font-family: 'Poppins', 'Inter', Arial, sans-serif;
+  color: #111;
+}
+.hero-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; width: 100vw;
+}
+.hero-section {
+  width: 100%;
+  max-width: 760px;
+  margin: auto;
+  padding: 24px;
+}
+.flexbase-overlap {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-size: 10rem;
+  font-weight: 700;
+  letter-spacing: -2px;
+  height: 210px;
+  margin-bottom: 0;
+}
+.flex-title {
+  position: relative;
+  z-index: 3;
+  color: #181818;
+  font-family: 'Poppins', 'Inter', Arial, sans-serif;
+  padding-right: 8px;
+  display: inline-block;
+}
+.flex-title::after {
+  content: "";
+  display: block;
+  /* margin-top: -34px; */
+  bottom: -28px; 
+  width: 322px; /* Set length of the line here */
+  height: 3px;
+  background: #f96c2b;
+  /* border-radius: 2px; */
+}
+.base-title {
+  position: relative;
+  z-index: 1;
+  margin-left: 220px;
+  padding-left: 12px;
+  color: #181818;
+  font-family: 'Poppins', 'Inter', Arial, sans-serif;
+}
+.base-title::before {
+  content: "";
+  position: absolute;
+  top: -10px;         /* Adjust upwards for tight or loose spacing */
+  left: 0;
+  width: 420px;       /* Set to desired line length */
+  height: 3px;
+  background: #f96c2b;
+  border-radius: 2px;
+  display: block;
+}
+.shoe-img-container {
+  position: relative;
+  z-index: 2;
+  width: 210px;
+  height: 160px;
+}
+.hero-sneaker {
+  position: absolute;
+  left: -184px; /* adjusts how much 'flex' overlaps */
+  top: -234px; /* raises overlaps with 'Base' */
+  width: 530px;
+  height: auto;
+  transform: rotate(-20deg);
+  animation: fadeInShoe 1s ease;
+  animation: slideUpShoe 2.5s cubic-bezier(.24,.98,.65,.98);
+  /* box-shadow: 0 12px 52px rgba(255,150,28,0.16); */
+  /* filter: drop-shadow(0 8px 32px rgba(150, 200, 100, 0.11)); */
+}
+.hero-subtitle {
+  position: absolute;
+  right: -100px;
+  bottom: -16px;
+  color: #727272;
+  font-size: 1.6rem;
+  letter-spacing: 2px;
+  font-weight: 500;
+  z-index: 3;
+  font-family: 'Cormorant Garamond', serif;
+}
+@keyframes fadeInShoe {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUpShoe {
+  0% {
+    opacity: 0;
+    transform: translateY(300px) rotate(-20deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-8px) rotate(-20deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(-20deg);
+  }
+}
+@media (max-width: 650px) {
+  .flexbase-overlap {
+    font-size: 2.1rem;
+    height: 110px;
+  }
+  .shoe-img-container {
+    width: 98px;
+    height: 68px;
+  }
+  .hero-sneaker {
+    width: 102px;
+    left: -18px;
+    top: -28px;
+  }
+  .hero-section {
+    padding: 14px;
+  }
+  .hero-subtitle {
+    font-size: 0.90rem;
+    bottom: -32px;
+  }
+}
+/* Shoe of the Day Section */
+.shoe-of-day-section {
+  background: #e8eaf0;
+  padding: 80px 0;
+  margin-top: 0;
+}
+
+.shoe-day-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.shoe-day-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
+}
+
+.shoe-day-text {
+  flex: 1;
+  max-width: 480px;
+}
+
+.shoe-day-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3.2rem;
+  font-weight: 600;
+  color: #2c2c2c;
+  line-height: 1.15;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+  margin-left: 25px;
+}
+
+.shoe-day-description {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  max-width: 420px;
+  margin-left: 25px;
+}
+
+.buy-now-btn {
+  background: #fff;
+  color: #000000;
+  border: 1px solid #000000;
+  padding: 10px 24px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  /* border-radius: 8px; */
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  letter-spacing: 0.5px;
+  margin-left: 25px;
+}
+
+.buy-now-btn:hover {
+  background: #000000;
+  color: #fff;
+  border: 2px solid #000000;
+  transform: translateY(-2px);
+}
+
+.shoe-day-image {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.featured-shoe {
+  max-width: 500px;
+  max-height: 1500px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.12));
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .shoe-day-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 40px;
+  }
+  
+  .shoe-day-title {
+    font-size: 2.8rem;
+  }
+  
+  .shoe-day-description {
+    font-size: 1.05rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .shoe-of-day-section {
+    padding: 60px 0;
+  }
+  
+  .shoe-day-container {
+    padding: 0 16px;
+  }
+  
+  .shoe-day-title {
+    font-size: 2.2rem;
+    margin-bottom: 18px;
+  }
+  
+  .shoe-day-description {
+    font-size: 1rem;
+    margin-bottom: 28px;
+  }
+  
+  .buy-now-btn {
+    padding: 12px 28px;
+    font-size: 0.95rem;
+  }
+  
+  .featured-shoe {
+    max-height: 220px;
+  }
+}
+
+/* Collections Section */
+.collections-section {
+  background: #f6f7fb;
+  padding: 44px 0 18px 0;
+  margin-top: 0;
+  overflow: hidden;
+}
+
+.category-tabs {
+  max-width: 1280px;
+  margin: 0 auto 26px auto;
+  display: flex;
+  gap: 2.4rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.34rem;
+  justify-content: center;
+}
+
+.tab {
+  cursor: pointer;
+  color: #bbb;
+  font-weight: 500;
+  transition: color 0.19s, border-bottom 0.19s;
+  padding-bottom: 8px;
+  border-bottom: 2px solid transparent;
+  letter-spacing: 0.03em;
+}
+
+.tab.active {
+  color: #181818;
+  font-weight: 700;
+  border-bottom: 2px solid #181818;
+}
+
+.tab:hover {
+  color: #f96c2b;
+  border-bottom: 2px solid #f96c2b;
+}
+
+.slider-container {
+  max-width: 1400px;
+  margin: 0 auto 40px auto;
+  padding: 0 20px 30px 20px;
+  overflow: hidden;
+}
+.slider-container:last-child {
+  margin-bottom: 20px;
+}
+.shoe-slider {
+  width: 100%;
+  overflow: hidden;
+}
+
+.swiper-wrapper {
+  display: flex;
+  align-items: stretch;
+  transition-timing-function: linear !important;
+}
+
+.swiper-slide {
+  flex-shrink: 0;
+  height: auto;
+  display: flex;
+}
+
+.shoe-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 22px rgba(80,60,80,0.07);
+  padding: 18px 14px 16px 14px;
+  text-align: center;
+  transition: box-shadow 0.2s, transform 0.25s, background 0.3s;
+  width: 100%;
+  height: 235px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.shoe-card:hover {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.20);
+  transform: translateY(-6px) scale(1.03);
+  z-index: 2;
+}
+
+/* Lighter dark overlay that appears on hover */
+.shoe-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.35); /* Reduced from 0.75 to 0.35 */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.shoe-card:hover::before {
+  opacity: 1;
+}
+
+/* Apply darkness to shoe image on hover */
+.shoe-image {
+  max-width: 130px;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #f7f7fc;
+  padding: 6px;
+  flex-shrink: 0;
+  transition: filter 0.3s ease;
+  position: relative;
+  z-index: 0; /* Changed from 2 to 0 so overlay affects it */
+}
+
+.shoe-card:hover .shoe-image {
+  filter: brightness(0.8) contrast(1.1); /* Darkens the image slightly */
+}
+
+/* Hide text on hover */
+/* .shoe-card:hover .shoe-name,
+.shoe-card:hover .shoe-price {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+} */
+
+/* Keep tag visible but slightly faded */
+.shoe-card:hover .shoe-tag {
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+/* Icons container - positioned higher and visible on hover */
+.card-icons {
+  position: absolute;
+  top: 50%; /* Moved from bottom to center vertically */
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center both horizontally and vertically */
+  display: flex;
+  gap: 15px; /* Increased gap between icons */
+  opacity: 0;
+  z-index: 3;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.shoe-card:hover .card-icons {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) translateY(-10px); /* Slight upward movement */
+}
+
+.card-icon {
+  width: 40px; /* Slightly larger icons */
+  height: 40px;
+  /* border-radius: 50%; */
+  background: #24c97c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 4px 15px rgba(36, 201, 124, 0.3); /* Added shadow for depth */
+}
+
+.card-icon:hover {
+  background: #1ea168;
+  transform: scale(1.15); /* Slightly more scale on hover */
+}
+
+.card-icon svg {
+  width: 22px; /* Slightly larger SVG */
+  height: 22px;
+  fill: white;
+}
+
+/* Existing styles for other elements */
+.shoe-tag {
+  position: absolute;
+  right: 10px; 
+  top: 10px;
+  background: #000000;
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 3px 9px;
+  border-radius: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  transition: opacity 0.2s ease;
+  z-index: 2; /* Keep tag above the overlay but below icons */
+}
+
+.shoe-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #232323;
+  line-height: 1.25;
+  margin: 6px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.5em;
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+
+.shoe-price {
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 1.02rem;
+  color: #232323;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: auto;
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #bbb;
+  font-weight: 400;
+}
+
+.current-price {
+  color: #181818;
+  font-weight: 700;
+}
+
+/* Mobile responsiveness for icons */
+@media (max-width: 800px) {
+  .card-icons {
+    gap: 15px;
+  }
+  
+  .card-icon {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .card-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 800px) {
+  .category-tabs { 
+    font-size: 1.09rem; 
+    gap: 1.6rem; 
+  }
+  .shoe-card { 
+    height: 200px; 
+    padding: 14px 10px 12px 10px;
+  }
+  .shoe-image { 
+    max-width: 90px; 
+    max-height: 70px; 
+  }
+}
+
+@media (max-width: 600px) {
+  .slider-container { 
+    padding-left: 12px; 
+    padding-right: 12px; 
+  }
+}

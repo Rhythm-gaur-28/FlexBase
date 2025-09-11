@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FlexBase | Sneaker Heads Hub</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  <main class="hero-wrapper">
+    <header class="hero-section">
+      <div class="flexbase-overlap">
+        <span class="flex-title">FLEX</span>
+        <div class="shoe-img-container">
+          <img src="/images/tilted-sneaker.png" alt="Tilted Sneaker" class="hero-sneaker" />
+        </div>
+        <span class="base-title">BASE</span>
+        <div class="hero-subtitle">Showcase. Collect. Connect</div>
+      </div>
+    </header>
+  </main>
+  <!-- Shoe of the Day Section -->
+<section class="shoe-of-day-section">
+  <div class="shoe-day-container">
+    <div class="shoe-day-content">
+      <div class="shoe-day-text">
+        <h2 class="shoe-day-title"><%= shoeOfDay.name %></h2>
+        <p class="shoe-day-description"><%= shoeOfDay.description %></p>
+        <button class="buy-now-btn" onclick="buyNow('<%= shoeOfDay._id %>')">Buy Now</button>
+      </div>
+      <div class="shoe-day-image">
+        <img src="<%= shoeOfDay.image %>" alt="<%= shoeOfDay.name %>" class="featured-shoe"/>
+      </div>
+    </div>
+  </div>
+</section>
+  <section class="collections-section">
+  <div class="category-tabs">
+    <span class="tab <%= category === 'new-arrivals' ? 'active' : '' %>" onclick="showCategory('new-arrivals')">New Arrivals</span>
+    <span class="tab <%= category === 'best-seller' ? 'active' : '' %>" onclick="showCategory('best-seller')">Best Seller</span>
+    <span class="tab <%= category === 'most-popular' ? 'active' : '' %>" onclick="showCategory('most-popular')">Most Popular</span>
+  </div>
+
+  <!-- Row 1 Slider -->
+  <div class="slider-container">
+    <div class="swiper shoe-slider" id="slider-row1">
+      <div class="swiper-wrapper">
+        <% row1Products.forEach(function(product) { %>
+          <div class="swiper-slide">
+            <div class="shoe-card">
+              <img src="<%= product.image %>" alt="<%= product.name %>" class="shoe-image"/>
+              <% if (product.tag) { %>
+                <span class="shoe-tag"><%= product.tag %></span>
+              <% } %>
+              <div class="shoe-name"><%= product.name %></div>
+              <div class="shoe-price">
+                <% if (product.oldPrice) { %>
+                  <span class="old-price">$<%= product.oldPrice %></span>
+                <% } %>
+                <span class="current-price">$<%= product.price %></span>
+              </div>
+              
+              <!-- Icons that appear on hover -->
+              <div class="card-icons">
+                <div class="card-icon view-icon" onclick="viewProduct('<%= product._id %>')">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                  </svg>
+                </div>
+                <div class="card-icon cart-icon" onclick="addToCart('<%= product._id %>')">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2 Slider -->
+  <div class="slider-container">
+    <div class="swiper shoe-slider" id="slider-row2">
+      <div class="swiper-wrapper">
+        <% row2Products.forEach(function(product) { %>
+          <div class="swiper-slide">
+            <div class="shoe-card">
+              <img src="<%= product.image %>" alt="<%= product.name %>" class="shoe-image"/>
+              <% if (product.tag) { %>
+                <span class="shoe-tag"><%= product.tag %></span>
+              <% } %>
+              <div class="shoe-name"><%= product.name %></div>
+              <div class="shoe-price">
+                <% if (product.oldPrice) { %>
+                  <span class="old-price">$<%= product.oldPrice %></span>
+                <% } %>
+                <span class="current-price">$<%= product.price %></span>
+              </div>
+              
+              <!-- Icons that appear on hover -->
+              <div class="card-icons">
+                <div class="card-icon view-icon" onclick="viewProduct('<%= product._id %>')">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                  </svg>
+                </div>
+                <div class="card-icon cart-icon" onclick="addToCart('<%= product._id %>')">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+  <!-- Row 3 Slider -->
+  <div class="slider-container">
+    <div class="swiper shoe-slider" id="slider-row3">
+      <div class="swiper-wrapper">
+        <% row3Products.forEach(function(product) { %>
+          <div class="swiper-slide">
+            <div class="shoe-card">
+              <img src="<%= product.image %>" alt="<%= product.name %>" class="shoe-image"/>
+              <% if (product.tag) { %>
+                <span class="shoe-tag"><%= product.tag %></span>
+              <% } %>
+              <div class="shoe-name"><%= product.name %></div>
+              <div class="shoe-price">
+                <% if (product.oldPrice) { %>
+                  <span class="old-price">$<%= product.oldPrice %></span>
+                <% } %>
+                <span class="current-price">$<%= product.price %></span>
+              </div>
+              
+              <!-- Icons that appear on hover -->
+              <div class="card-icons">
+                <div class="card-icon view-icon" onclick="viewProduct('<%= product._id %>')">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                  </svg>
+                </div>
+                <div class="card-icon cart-icon" onclick="addToCart('<%= product._id %>')">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script src="/js/shoeSlider.js"></script>
+
+</body>
+</html>
