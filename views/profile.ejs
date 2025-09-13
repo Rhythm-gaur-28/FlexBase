@@ -169,22 +169,29 @@
         </div>
         <!-- Edit Profile Modal -->
         <div id="editProfileModal" class="modal">
-            <div class="modal-content">
+            <div class="modal-content slide-up">
                 <h2>Edit Profile</h2>
-                <form id="editProfileForm" enctype="multipart/form-data">
-                    <label for="profilePicture">Profile Picture:</label>
-                    <input type="file" id="profilePicture" name="profilePicture" accept="image/*">
-
+                <form id="editProfileForm" enctype="multipart/form-data" autocomplete="off">
+                    <div class="profile-image-edit">
+                        <label for="profilePicture" class="image-upload-label">
+                            <img src="<%= user.profileImage || '/images/default-profile.jpg' %>" alt="Profile"
+                                id="profile-preview" class="edit-profile-avatar" />
+                            <span class="change-image-btn">Change Image</span>
+                        </label>
+                        <input type="file" id="profilePicture" name="profilePicture" accept="image/*"
+                            style="display:none;">
+                    </div>
                     <label for="bio">Bio:</label>
-                    <textarea id="bio" name="bio" rows="4"><%= user.bio || '' %></textarea>
-
+                    <textarea id="bio" name="bio" rows="4"
+                        placeholder="Tell us a bit about yourself..."><%= user.bio || '' %></textarea>
                     <div class="modal-buttons">
-                        <button type="button" id="cancelBtn" class="btn">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" id="cancelBtn" class="btn btn-cancel">Cancel</button>
+                        <button type="submit" class="btn btn-save">Save Changes</button>
                     </div>
                 </form>
             </div>
         </div>
+
 
         <!-- Confirmation Dialog -->
         <div id="confirmCancel" class="modal">
@@ -201,7 +208,7 @@
         <script src="/js/profile.js"></script>
         <script>
             // Pass all collections as a JS variable
-            const allCollections = <%- JSON.stringify(collections) %>;
+            const allCollections = <% - JSON.stringify(collections) %>;
         </script>
 </body>
 

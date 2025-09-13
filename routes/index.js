@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
   const row3Products = await Product.find({ section: 'row3', category });
   const shoeOfDay = await Product.findOne({ featured: true }) || {
     name: "2025 Nike The Best Classical",
-    description: "No description.",
+    description: "Designed by Nike, this shoe is the perfect fit for the modern man. Its classic design and timeless style make it a must-have for any fashionista.",
     image: "/images/shoe-of-day.png"
   };
   res.render('index', { row1Products, row2Products, row3Products, category, shoeOfDay });
@@ -139,15 +139,16 @@ router.get('/profile', authRequired, async (req, res) => {
 });
 router.post('/profile/update', authRequired, uploadProfile.single('profilePicture'), async (req, res) => {
   try {
-    const { bio } = req.body;
-    const updateData = { bio: bio || req.user.bio };
+    const update = {
+      bio: req.body.bio
+    };
     if (req.file) {
-      updateData.profileImage = `/uploads/profiles/${req.file.filename}`;
+      update.profileImage = '/uploads/profiles/' + req.file.filename;
     }
-    await User.findByIdAndUpdate(req.user._id, updateData);
-    res.json({ success: true, message: 'Profile updated successfully.', profileImage: updateData.profileImage, bio: updateData.bio });
+    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true });
+    res.json({ success: true, user });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to update profile.' });
+    res.status(500).json({ error: 'Failed to update profile' });
   }
 });
 

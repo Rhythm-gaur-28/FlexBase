@@ -22,6 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Open modal
   editBtn.addEventListener('click', () => {
+    // Set modal image preview to current profile image if no new image is selected
+    const sidebarImg = document.querySelector('.profile-avatar-big');
+    const modalImg = document.getElementById('profile-preview');
+    if (sidebarImg && modalImg) {
+      modalImg.src = sidebarImg.src;
+    }
+    // Set modal bio textarea to current bio
+    const sidebarBio = document.querySelector('.profile-about');
+    const modalBio = document.getElementById('bio');
+    if (sidebarBio && modalBio) {
+      modalBio.value = sidebarBio.textContent.trim();
+    }
     modal.style.display = 'flex';
   });
 
@@ -61,14 +73,19 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const result = await res.json();
 
-      if (result.success) {
-        // Update images with cache busting
+      if (result.success && result.user) {
+        // Update images with cache busting if profileImage changed
         const timestamp = '?t=' + new Date().getTime();
-        document.querySelectorAll('.profile-avatar, .profile-avatar-big').forEach(img => {
-          img.src = result.profileImage + timestamp;
-        });
-        // Update bio text
-        document.querySelector('.profile-about').textContent = result.bio || '';
+        if (result.user.profileImage) {
+          document.querySelectorAll('.profile-avatar, .profile-avatar-big, #profile-preview').forEach(img => {
+            img.src = result.user.profileImage + timestamp;
+          });
+        }
+        // Update bio text everywhere
+        if (typeof result.user.bio !== 'undefined') {
+          document.querySelector('.profile-about').textContent = result.user.bio || '';
+          document.getElementById('bio').value = result.user.bio || '';
+        }
         // Close modal and show success toast
         modal.style.display = 'none';
         toastMessage('Changes saved successfully!');
@@ -186,4 +203,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Modal close
   closeBtn.onclick = () => { modal.classList.remove('open'); };
+});
+
+document.getElementById('profilePicture').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  const preview = document.getElementById('profile-preview');
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      preview.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
 });
