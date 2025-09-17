@@ -1,8 +1,8 @@
 /* General Body and Container Styling */
 body {
-    font-family: 'Cormorant Garamond', serif; /* Use a modern, clean font */
-    background-color: #f0f2f5; /* Light, subtle background color */
-    color: #4b5563; /* Darker gray for text for readability */
+    font-family: 'Cormorant Garamond', serif;
+    background-color: #f0f2f5;
+    color: #4b5563;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -11,10 +11,9 @@ body {
 }
 
 .add-shoe-wizard {
-    background-color: #ffffff; /* Clean white card background */
+    background-color: #ffffff;
     padding: 3rem;
-    /* border-radius: 1.5rem;  */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Soft, subtle shadow */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     width: 100%;
     max-width: 800px;
     box-sizing: border-box;
@@ -24,11 +23,11 @@ body {
 h2 {
     font-size: 2.25rem;
     font-weight: 700;
-    color: #111827; /* Dark text for a strong heading */
+    color: #111827;
     text-align: center;
     margin-top: 0;
     margin-bottom: 2rem;
-    border-bottom: 2px solid #e5e7eb; /* A thin separator line */
+    border-bottom: 2px solid #e5e7eb;
     padding-bottom: 1rem;
 }
 
@@ -57,7 +56,7 @@ label {
     display: block;
     margin-bottom: 10px;
     font-weight: 500;
-    color: #6b7280; /* A slightly lighter gray for labels */
+    color: #6b7280;
 }
 
 /* Form Inputs */
@@ -67,8 +66,8 @@ input[type="number"] {
     width: 100%;
     padding: 12px;
     margin-top: 5px;
-    border: 1px solid #d1d5db; /* Light gray border */
-    border-radius: 0.75rem; /* More rounded corners */
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
     box-sizing: border-box;
     transition: all 0.3s ease;
 }
@@ -77,7 +76,7 @@ input[type="text"]:focus,
 input[type="date"]:focus,
 input[type="number"]:focus {
     outline: none;
-    border-color: #3b82f6; /* A clean blue for focus */
+    border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
@@ -85,7 +84,7 @@ input[type="file"] {
     width: 100%;
     padding: 20px;
     margin-top: 5px;
-    border: 2px dashed #d1d5db; /* Dashed border for a clear drop zone */
+    border: 2px dashed #d1d5db;
     border-radius: 0.75rem;
     box-sizing: border-box;
     transition: border-color 0.3s ease;
@@ -101,7 +100,7 @@ input[type="file"]:focus {
 .image-preview {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem; /* Generous spacing between images */
+    gap: 1rem;
     margin-top: 1.5rem;
     padding: 1rem;
     border-radius: 0.75rem;
@@ -116,7 +115,7 @@ input[type="file"]:focus {
     border-radius: 0.75rem;
     overflow: hidden;
     transition: transform 0.3s ease;
-    border: 1px solid #e5e7eb; /* Add a subtle border to the image container */
+    border: 1px solid #e5e7eb;
 }
 
 .image-preview-item img {
@@ -128,7 +127,7 @@ input[type="file"]:focus {
 .img-remove-btn {
     position: absolute;
     top: 4px;
-    right: 0px;
+    right: 4px;
     background-color: rgba(0, 0, 0, 0.9);
     color: white;
     border: none;
@@ -152,48 +151,78 @@ input[type="file"]:focus {
     transform: scale(1.1);
 }
 
-/* Button Styling */
+/* Updated Button Styling - Sharp, modern, no border radius */
 button {
-    padding: 12px 25px;
+    padding: 14px 28px;
     border: none;
-    border-radius: 0.75rem;
+    border-radius: 0; /* Removed border radius for sharp look */
     cursor: pointer;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 600;
     margin-right: 10px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Button Container with spacing */
+.button-container {
+    margin-top: 2.5rem; /* Added space above buttons */
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
 }
 
 .btn-next,
-.btn-prev,
-.btn-success,
-.btn-primary {
-    background-color: #111827; /* Dark button background */
+.btn-success {
+    background-color: #1f2937;
     color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-next:hover,
+.btn-success:hover {
+    background-color: #111827;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .btn-prev {
-    background-color: #e5e7eb; /* Light gray for the back button */
-    color: #111827;
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 2px solid #d1d5db;
 }
 
-.btn-success {
-    background-color: #10b981; /* Green for success action */
+.btn-prev:hover {
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
 }
 
 .btn-primary {
-    background-color: #3b82f6; /* Blue for primary action */
+    background-color: #3b82f6;
+    color: white;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.btn-primary:hover {
+    background-color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
 }
 
-.add-shoe-wizard .btn-next,
-.add-shoe-wizard .btn-prev,
-.add-shoe-wizard .btn-success {
-    min-width: 100px;
+/* Add More Button - only shows when images exist */
+#addMoreBtn {
+    background-color: #10b981;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    margin-top: 1rem;
+}
+
+#addMoreBtn:hover {
+    background-color: #059669;
+    transform: translateY(-1px);
 }
 
 /* Owner Container */
@@ -204,25 +233,34 @@ button:hover {
     border-radius: 0.75rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem; /* Consistent gaps */
+    gap: 1.5rem;
 }
 
-.owner-input-group {
-    background-color: #f9fafb; /* Lighter background for each owner group */
+.owner-block {
+    background-color: #f9fafb;
     padding: 1rem;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: 2fr 1fr 1fr auto;
     gap: 1rem;
+    align-items: end;
 }
 
-.owner-entry label {
-    margin-bottom: 10px;
+.owner-block input {
+    margin-top: 0;
 }
 
-.owner-entry input {
-    margin-top: 5px;
+.owner-block button {
+    background-color: #ef4444;
+    color: white;
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.owner-block button:hover {
+    background-color: #dc2626;
 }
 
 .toast {

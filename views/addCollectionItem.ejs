@@ -17,7 +17,9 @@
           <input type="file" name="images" id="images" accept="image/*" />
           <button type="button" id="addMoreBtn" class="btn-secondary" style="display:none;">Add More</button>
           <div class="image-preview" id="imagePreview"></div>
-          <button type="button" class="btn-next">Next</button>
+          <div class="button-container">
+            <button type="button" class="btn-next">Next</button>
+          </div>
         </div>
         <!-- Step 2: Details -->
         <div class="wizard-step" data-step="2">
@@ -26,16 +28,20 @@
           <label>Bought on: <input type="date" name="boughtOn" required /></label>
           <label>Price you bought: <input type="number" name="boughtAtPrice" required /></label>
           <label>Current market price: <input type="number" name="marketPrice" required /></label>
-          <button type="button" class="btn-prev">Back</button>
-          <button type="button" class="btn-next">Next</button>
+          <div class="button-container">
+            <button type="button" class="btn-prev">Back</button>
+            <button type="button" class="btn-next">Next</button>
+          </div>
         </div>
         <!-- Step 3: Previous Owners -->
         <div class="wizard-step" data-step="3">
           <h2>Step 3: Previous Owners</h2>
           <div id="owners-container"></div>
           <button type="button" class="btn-primary" id="addOwnerBtn">+ Add Owner</button>
-          <button type="button" class="btn-prev">Back</button>
-          <button type="submit" class="btn-success">Upload</button>
+          <div class="button-container">
+            <button type="button" class="btn-prev">Back</button>
+            <button type="submit" class="btn-success">Upload</button>
+          </div>
         </div>
       </form>
       <div id="toast" class="toast"></div>
