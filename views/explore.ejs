@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Explore Users | FlexBase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/profile.css" />
+  <link rel="stylesheet" href="/css/explore.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <section class="explore-wrap">
+    <h1 class="explore-title">Explore</h1>
+    <div class="search-box">
+      <input id="userSearch" type="text" placeholder="Search users by username..." autocomplete="off" />
+      <ul id="searchResults" class="results-dropdown"></ul>
+    </div>
+  </section>
+
+  <script>
+    // Optional: pass current user if needed by navbar
+    window.__currentUser = <%- JSON.stringify(user || null) %>;
+  </script>
+  <script src="/js/explore.js"></script>
+</body>
+</html>

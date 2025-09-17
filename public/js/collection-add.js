@@ -63,29 +63,40 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function displayImagePreview() {
-    imagePreview.innerHTML = '';
-    imagesArr.forEach((f, idx) => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.width = 90;
-        img.style.margin = '6px';
-        imagePreview.appendChild(img);
-        const remBtn = document.createElement('button');
-        remBtn.innerHTML = '&times;';
-        remBtn.className = 'img-remove-btn';
-        remBtn.onclick = () => {
-          imagesArr.splice(idx, 1);
-          displayImagePreview();
-          addMoreBtn.style.display = imagesArr.length < 5 ? 'inline-block' : 'none';
-        };
-        img.after(remBtn);
+  imagePreview.innerHTML = '';
+  imagesArr.forEach((f, idx) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      // Create container for each image
+      const container = document.createElement('div');
+      container.className = 'image-preview-item';
+      
+      // Create image element
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      
+      // Create remove button
+      const remBtn = document.createElement('button');
+      remBtn.innerHTML = '&times;';
+      remBtn.className = 'img-remove-btn';
+      remBtn.onclick = () => {
+        imagesArr.splice(idx, 1);
+        displayImagePreview();
+        addMoreBtn.style.display = imagesArr.length < 5 ? 'inline-block' : 'none';
       };
-      reader.readAsDataURL(f);
-    });
-    addMoreBtn.style.display = imagesArr.length < 5 ? 'inline-block' : 'none';
-  }
+      
+      // Append image and button to container
+      container.appendChild(img);
+      container.appendChild(remBtn);
+      
+      // Append container to preview area
+      imagePreview.appendChild(container);
+    };
+    reader.readAsDataURL(f);
+  });
+  addMoreBtn.style.display = imagesArr.length < 5 ? 'inline-block' : 'none';
+}
+
 
   // ------ Bio/Details Step (Step 2) - Inputs validation and no future dates ------
   const boughtAtPriceInput = form.elements['boughtAtPrice'];
@@ -114,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ------ Owners Step (Step 3) - all date constraints ------
   const todayStr = new Date().toISOString().split('T')[0];
   document.getElementById('addOwnerBtn').onclick = () => {
-    const container = docuFRment.getElementById('owners-container');
+    const container = document.getElementById('owners-container');
     let minFromDate = '';
 if (container.children.length) {
   const prevToInput = container.lastElementChild.querySelector('[name="prevTo"]');

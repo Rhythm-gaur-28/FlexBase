@@ -123,20 +123,24 @@ router.get('/collections/user/:userId', authRequired, async (req, res) => {
 
 // ---------- PROFILE & UPDATE ----------
 router.get('/profile', authRequired, async (req, res) => {
-  const followers = await User.find({ following: req.user._id });
-  const following = await User.find({ _id: { $in: req.user.following } });
-  const posts = [];
-  const collections = await Collection.find({ user: req.user._id }).populate('previousOwners.user');
-  const saved = [];
+  const viewingSelf = true;
+  const target = req.user; // own profile
+  const followers = await User.find({ following: req.user._id }).select('username profileImage').lean();
+  const following = await User.find({ _id: { $in: req.user.following } }).select('username profileImage').lean();
+  const posts = []; // populate if you add posts later
+  const collections = await Collection.find({ user: target._id }).lean();
+  const saved = []; // include only for self
   res.render('profile', {
-    user: req.user,
+    user: req.user,            // current logged-in user (for navbar)
+    profileUser: target,       // the profile being viewed
+    viewingSelf,               // true
     followers,
     following,
     posts,
     collections,
     saved
   });
-});
+}); 
 router.post('/profile/update', authRequired, uploadProfile.single('profilePicture'), async (req, res) => {
   try {
     const update = {
@@ -150,6 +154,53 @@ router.post('/profile/update', authRequired, uploadProfile.single('profilePictur
   } catch (error) {
     res.status(500).json({ error: 'Failed to update profile' });
   }
+});
+
+// ---------- EXPLORE (User Search) ----------
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+router.get('/explore', authRequired, (req, res) => {
+  res.render('explore', { user: req.user });
+});
+
+// Typeahead API: /api/users/search?q=<term>
+router.get('/api/users/search', authRequired, async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json({ users: [] });
+    const regex = new RegExp('^' + escapeRegex(q), 'i'); // prefix match
+    const users = await User.find({ username: regex })
+      .select('username profileImage')
+      .limit(8)
+      .lean();
+    res.json({ users });
+  } catch (err) {
+    console.error('User search error:', err);
+    res.status(500).json({ users: [] });
+  }
+});
+
+// Example public profile by username
+router.get('/u/:username', authRequired, async (req, res) => {
+  const target = await User.findOne({ username: req.params.username }).lean();
+  if (!target) return res.status(404).render('404'); 
+  const viewingSelf = String(target._id) === String(req.user._id);
+  if (viewingSelf) return res.redirect('/profile'); // canonicalize own profile URL to /profile [memory:21]
+  const followers = []; // optionally compute if needed
+  const following = []; // optionally compute if needed
+  const posts = []; 
+  const collections = await Collection.find({ user: target._id }).lean();
+  // Do not fetch 'saved' for others
+  res.render('profile', {
+    user: req.user,
+    profileUser: target,
+    viewingSelf,
+    followers,
+    following,
+    posts,
+    collections,
+    saved: [] // empty or omit
+  });
 });
 
 module.exports = router;
