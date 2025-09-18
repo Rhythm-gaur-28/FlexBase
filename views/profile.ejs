@@ -66,12 +66,23 @@
                     <button class="side-nav-btn" data-tab="saved">
                         <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
                                 stroke-width="2" viewBox="0 0 24 24">
-                                <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 2 0z" />
                             </svg></span>
                         Saved
                     </button>
                     <% } %>
                 </nav>
+
+                <!-- Follow Button Section - appears only for other users -->
+                <% if (!isSelf) { %>
+                  <form id="followForm" style="margin-top:1.8rem; text-align:center;">
+                    <button type="submit" id="followBtn" class="btn-primary" style="font-size:1.05rem;">
+                      <%= typeof isFollowing !== 'undefined' && isFollowing ? 'Unfollow' : 'Follow' %>
+                    </button>
+                  </form>
+                <% } %>
+
+                <!-- Edit Profile Button - appears only for own profile -->
                 <% if (isSelf) { %>
                 <button class="edit-profile-btn">Edit Profile</button>
                 <% } %>
@@ -86,10 +97,29 @@
                             <%= followers ? followers.length : 0 %>
                         </span>
                     </div>
-                    <div class="profile-tab-placeholder">
-                        [Follower list will appear here]
-                    </div>
+                    <% if (followers && followers.length > 0) { %>
+                        <div class="user-list">
+                            <% followers.forEach(function(follower) { %>
+                                <div class="user-item" data-username="<%= follower.username %>">
+                                    <img src="<%= follower.profileImage || '/images/default-profile.jpg' %>" alt="<%= follower.username %>" class="user-avatar">
+                                    <div class="user-info">
+                                        <div class="user-username"><%= follower.username %></div>
+                                    </div>
+                                    <div class="user-actions">
+                                        <% if (isSelf) { %>
+                                            <button class="btn-remove-follower" data-username="<%= follower.username %>">Remove</button>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <div class="profile-tab-placeholder">
+                            <%= isSelf ? 'No followers yet.' : 'This user has no followers yet.' %>
+                        </div>
+                    <% } %>
                 </div>
+                
                 <div class="profile-tab-pane" data-tab="following">
                     <div class="profile-tab-title">
                         Following
@@ -97,10 +127,29 @@
                             <%= following ? following.length : 0 %>
                         </span>
                     </div>
-                    <div class="profile-tab-placeholder">
-                        [Following list will appear here]
-                    </div>
+                    <% if (following && following.length > 0) { %>
+                        <div class="user-list">
+                            <% following.forEach(function(followedUser) { %>
+                                <div class="user-item" data-username="<%= followedUser.username %>">
+                                    <img src="<%= followedUser.profileImage || '/images/default-profile.jpg' %>" alt="<%= followedUser.username %>" class="user-avatar">
+                                    <div class="user-info">
+                                        <div class="user-username"><%= followedUser.username %></div>
+                                    </div>
+                                    <div class="user-actions">
+                                        <% if (isSelf) { %>
+                                            <button class="btn-unfollow-user" data-username="<%= followedUser.username %>">Unfollow</button>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <div class="profile-tab-placeholder">
+                            <%= isSelf ? 'Not following anyone yet.' : 'This user is not following anyone yet.' %>
+                        </div>
+                    <% } %>
                 </div>
+
                 <div class="profile-tab-pane" data-tab="posts">
                     <div class="profile-tab-title">
                         Posts
@@ -112,6 +161,7 @@
                         [User posts will display here with images and icons]
                     </div>
                 </div>
+
                 <div class="profile-tab-pane" data-tab="collections">
                     <div class="profile-tab-title">
                         Collections

@@ -174,22 +174,29 @@ button {
 }
 
 .btn-next,
-.btn-success {
-    background-color: #1f2937;
-    color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.btn-success,.btn-prev,.btn-primary,.owner-block button {
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    color: black;
+    padding: 7px 12px;
+    font-size: 14px;
+    font-weight: 800;
+    margin-top: 1.2rem;
+    font-family: 'Cormorant Garamond', serif;
 }
 
 .btn-next:hover,
-.btn-success:hover {
+.btn-success:hover,.btn-prev:hover,.btn-primary:hover,.owner-block button:hover {
+    font-family: 'Cormorant Garamond', serif;
     background-color: #111827;
     transform: translateY(-1px);
+    color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.btn-prev {
+/* .btn-prev {
     background-color: #f3f4f6;
-    color: #374151;
+    color: #0a3f93;
     border: 2px solid #d1d5db;
 }
 
@@ -197,9 +204,9 @@ button {
     background-color: #e5e7eb;
     border-color: #9ca3af;
     transform: translateY(-1px);
-}
+} */
 
-.btn-primary {
+/* .btn-primary {
     background-color: #3b82f6;
     color: white;
     box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
@@ -209,19 +216,22 @@ button {
     background-color: #2563eb;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-}
+} */
 
 /* Add More Button - only shows when images exist */
 #addMoreBtn {
-    background-color: #10b981;
-    color: white;
-    padding: 10px 20px;
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    color: black;
+    padding: 7px 12px;
     font-size: 14px;
-    margin-top: 1rem;
+    margin-top: 1.2rem;
+    font-family: 'Cormorant Garamond', serif;
 }
 
 #addMoreBtn:hover {
-    background-color: #059669;
+    background-color: #000000;
+    color: white;
     transform: translateY(-1px);
 }
 
@@ -251,17 +261,17 @@ button {
     margin-top: 0;
 }
 
-.owner-block button {
+/* .owner-block button {
     background-color: #ef4444;
     color: white;
     padding: 8px 12px;
     font-size: 12px;
     border-radius: 4px;
-}
+} */
 
-.owner-block button:hover {
+/* .owner-block button:hover {
     background-color: #dc2626;
-}
+} */
 
 .toast {
     position: fixed;

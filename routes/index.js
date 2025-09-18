@@ -138,7 +138,8 @@ router.get('/profile', authRequired, async (req, res) => {
     following,
     posts,
     collections,
-    saved
+    saved,
+    isFollowing: false
   });
 }); 
 router.post('/profile/update', authRequired, uploadProfile.single('profilePicture'), async (req, res) => {
@@ -185,12 +186,14 @@ router.get('/u/:username', authRequired, async (req, res) => {
   const target = await User.findOne({ username: req.params.username }).lean();
   if (!target) return res.status(404).render('404'); 
   const viewingSelf = String(target._id) === String(req.user._id);
-  if (viewingSelf) return res.redirect('/profile'); // canonicalize own profile URL to /profile [memory:21]
-  const followers = []; // optionally compute if needed
-  const following = []; // optionally compute if needed
-  const posts = []; 
+  if (viewingSelf) return res.redirect('/profile');
+  // Populate followers/following
+  const followers = await User.find({ _id: { $in: target.followers } }).select('username profileImage').lean();
+  const following = await User.find({ _id: { $in: target.following } }).select('username profileImage').lean();
+  const posts = [];
   const collections = await Collection.find({ user: target._id }).lean();
-  // Do not fetch 'saved' for others
+  // Is the current user already following this user?
+  const isFollowing = req.user.following.map(id => String(id)).includes(String(target._id));
   res.render('profile', {
     user: req.user,
     profileUser: target,
@@ -199,8 +202,95 @@ router.get('/u/:username', authRequired, async (req, res) => {
     following,
     posts,
     collections,
-    saved: [] // empty or omit
+    saved: [],
+    isFollowing
   });
+});
+
+// Follow/Unfollow routes (add these to your routes/index.js)
+router.post('/u/:username/follow', authRequired, async (req, res) => {
+  try {
+    if (req.user.username === req.params.username) {
+      return res.status(400).json({ success: false, message: 'Cannot follow yourself.' });
+    }
+    const target = await User.findOne({ username: req.params.username });
+    if (!target) return res.status(404).json({ success: false, message: 'User not found.' });
+    
+    if (target.followers.includes(req.user._id)) {
+      return res.status(409).json({ success: false, message: 'Already following.' });
+    }
+    
+    target.followers.push(req.user._id);
+    req.user.following.push(target._id);
+    await target.save();
+    await req.user.save();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
+router.post('/u/:username/unfollow', authRequired, async (req, res) => {
+  try {
+    if (req.user.username === req.params.username) {
+      return res.status(400).json({ success: false, message: 'Cannot unfollow yourself.' });
+    }
+    const target = await User.findOne({ username: req.params.username });
+    if (!target) return res.status(404).json({ success: false, message: 'User not found.' });
+    
+    target.followers = target.followers.filter(fid => String(fid) !== String(req.user._id));
+    req.user.following = req.user.following.filter(fid => String(fid) !== String(target._id));
+    await target.save();
+    await req.user.save();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+// Remove a follower (for your own profile)
+router.post('/profile/remove-follower', authRequired, async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ success: false, message: 'Username required' });
+    
+    const followerUser = await User.findOne({ username });
+    if (!followerUser) return res.status(404).json({ success: false, message: 'User not found' });
+    
+    // Remove from your followers list
+    req.user.followers = req.user.followers.filter(fid => String(fid) !== String(followerUser._id));
+    // Remove from their following list
+    followerUser.following = followerUser.following.filter(fid => String(fid) !== String(req.user._id));
+    
+    await req.user.save();
+    await followerUser.save();
+    
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Unfollow a user from your following list
+router.post('/profile/unfollow-user', authRequired, async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ success: false, message: 'Username required' });
+    
+    const targetUser = await User.findOne({ username });
+    if (!targetUser) return res.status(404).json({ success: false, message: 'User not found' });
+    
+    // Remove from your following list
+    req.user.following = req.user.following.filter(fid => String(fid) !== String(targetUser._id));
+    // Remove from their followers list
+    targetUser.followers = targetUser.followers.filter(fid => String(fid) !== String(req.user._id));
+    
+    await req.user.save();
+    await targetUser.save();
+    
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 });
 
 module.exports = router;
