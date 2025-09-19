@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Create Post | FlexBase</title>
+  <link rel="stylesheet" href="/css/addPost.css">
+</head>
+
+<body>
+  <%- include('partials/navbar') %>
+    <div class="add-post-container">
+      <form id="addPostForm" enctype="multipart/form-data">
+        <h2>Create New Post</h2>
+        
+        <!-- Image Upload Section -->
+        <div class="upload-section">
+          <div class="upload-area" id="uploadArea">
+            <div class="upload-content">
+              <div class="upload-icon">📸</div>
+              <h3>Drag & Drop Images Here</h3>
+              <p>or click to browse</p>
+              <p class="upload-info">JPG, JPEG, PNG and WEBP. Max 20 MB per image.</p>
+            </div>
+            <input type="file" name="images" id="images" accept="image/*" multiple />
+          </div>
+        </div>
+
+        <!-- Image Preview Section -->
+        <div class="image-preview-section" id="imagePreviewSection" style="display: none;">
+          <h3>Your Images</h3>
+          <div class="image-preview-grid" id="imagePreviewGrid"></div>
+        </div>
+
+        <!-- Caption Section -->
+        <div class="caption-section">
+          <label for="caption">Caption</label>
+          <textarea id="caption" name="caption" rows="4" placeholder="Write a caption for your post..."></textarea>
+        </div>
+
+        <!-- Hashtags Section -->
+        <div class="hashtags-section">
+          <label for="hashtags">Tags</label>
+          <input type="text" id="hashtags" name="hashtags" placeholder="#fashion #sneakers #style" />
+          <p class="hashtag-hint">Separate tags with spaces (e.g., #fashion #sneakers)</p>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="button-container">
+          <button type="submit" class="btn-post">Share Post</button>
+        </div>
+      </form>
+      
+      <div id="toast" class="toast"></div>
+    </div>
+    <script src="/js/addPost.js"></script>
+</body>
+
+</html>

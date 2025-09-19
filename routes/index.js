@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Collection = require('../models/Collection');
+const Post = require('../models/Post');
 const authRequired = require('../middleware/authRequired');
 const authController = require('../controllers/authController');
 
@@ -124,24 +125,25 @@ router.get('/collections/user/:userId', authRequired, async (req, res) => {
 // ---------- PROFILE & UPDATE ----------
 router.get('/profile', authRequired, async (req, res) => {
   const viewingSelf = true;
-  const target = req.user; // own profile
+  const target = req.user;
   const followers = await User.find({ following: req.user._id }).select('username profileImage').lean();
   const following = await User.find({ _id: { $in: req.user.following } }).select('username profileImage').lean();
-  const posts = []; // populate if you add posts later
+  const posts = await Post.find({ user: target._id }).lean(); // Add this line
   const collections = await Collection.find({ user: target._id }).lean();
-  const saved = []; // include only for self
+  const saved = [];
+  
   res.render('profile', {
-    user: req.user,            // current logged-in user (for navbar)
-    profileUser: target,       // the profile being viewed
-    viewingSelf,               // true
+    user: req.user,
+    profileUser: target,
+    viewingSelf,
     followers,
     following,
-    posts,
+    posts, // Make sure posts are passed
     collections,
     saved,
     isFollowing: false
   });
-}); 
+});
 router.post('/profile/update', authRequired, uploadProfile.single('profilePicture'), async (req, res) => {
   try {
     const update = {
@@ -187,20 +189,20 @@ router.get('/u/:username', authRequired, async (req, res) => {
   if (!target) return res.status(404).render('404'); 
   const viewingSelf = String(target._id) === String(req.user._id);
   if (viewingSelf) return res.redirect('/profile');
-  // Populate followers/following
+  
   const followers = await User.find({ _id: { $in: target.followers } }).select('username profileImage').lean();
   const following = await User.find({ _id: { $in: target.following } }).select('username profileImage').lean();
-  const posts = [];
+  const posts = await Post.find({ user: target._id }).lean(); // Add this line
   const collections = await Collection.find({ user: target._id }).lean();
-  // Is the current user already following this user?
   const isFollowing = req.user.following.map(id => String(id)).includes(String(target._id));
+  
   res.render('profile', {
     user: req.user,
     profileUser: target,
     viewingSelf,
     followers,
     following,
-    posts,
+    posts, // Make sure posts are passed
     collections,
     saved: [],
     isFollowing
@@ -292,5 +294,51 @@ router.post('/profile/unfollow-user', authRequired, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+// Add post storage configuration
+const postStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, 'public/uploads/posts/'),
+  filename: (req, file, cb) => cb(null, Date.now() + '_' + file.originalname)
+});
+const uploadPost = multer({ storage: postStorage });
 
+// GET route for add post page
+router.get('/posts/add', authRequired, (req, res) => {
+  res.render('addPost');
+});
+
+// POST route for creating post
+router.post('/posts/add', authRequired, (req, res, next) => {
+  uploadPost.array('images')(req, res, (err) => {
+    if (err) {
+      console.error("Multer upload error:", err);
+      return res.status(400).json({ success: false, message: "File upload failed." });
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: 'At least one image is required.' });
+    }
+
+    const imagePaths = req.files.map(file => '/uploads/posts/' + file.filename);
+    
+    // Process hashtags
+    const hashtags = req.body.hashtags ? 
+      (Array.isArray(req.body.hashtags) ? req.body.hashtags : [req.body.hashtags]) : [];
+
+    const newPost = new Post({
+      user: req.user._id,
+      images: imagePaths,
+      caption: req.body.caption || '',
+      hashtags: hashtags
+    });
+
+    await newPost.save();
+    res.json({ success: true, message: 'Post created successfully!' });
+  } catch (err) {
+    console.error('Error creating post:', err);
+    res.status(500).json({ success: false, message: 'Error creating post.' });
+  }
+});
 module.exports = router;

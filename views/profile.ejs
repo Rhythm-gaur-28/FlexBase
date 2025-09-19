@@ -164,10 +164,37 @@
                                 <%= posts ? posts.length : 0 %>
                             </span>
                         </div>
-                        <div class="profile-tab-placeholder">
-                            [User posts will display here with images and icons]
-                        </div>
+                        <% if (posts && posts.length> 0) { %>
+                            <div class="collection-grid">
+                                <% posts.forEach(function(post, idx) { %>
+                                    <div class="collection-card" data-post-index="<%= idx %>">
+                                        <div class="collection-img-wrap">
+                                            <img src="<%= post.images[0] %>" alt="Post image" />
+                                            <% if (post.images.length> 1) { %>
+                                                <span class="multi-icon" title="Multiple Images">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z" />
+                                                        <path
+                                                            d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                                                    </svg>
+                                                </span>
+                                                <% } %>
+                                        </div>
+                                        <div class="collection-brand">
+                                            <%= post.caption ? (post.caption.length> 30 ? post.caption.substring(0, 30)
+                                                + '...' : post.caption) : 'No caption' %>
+                                        </div>
+                                        <div class="collection-market-price">
+                                            <%= new Date(post.createdAt).toLocaleDateString() %>
+                                        </div>
+                                    </div>
+                                    <% }) %>
+                            </div>
+                            <% } else { %>
+                                <div class="profile-tab-placeholder">No posts yet. Share your first post!</div>
+                                <% } %>
                     </div>
+
 
                     <div class="profile-tab-pane" data-tab="collections">
                         <div class="profile-tab-title">
@@ -281,9 +308,9 @@
 
                     <script>
                         // Pass all collections as a JS variable
-                        const allCollections = <%- JSON.stringify(collections) %>;
+                        const allCollections = <% - JSON.stringify(collections) %>;
                         // expose viewingSelf to JS if needed
-                        window.viewingSelf = <%- JSON.stringify(isSelf) %>;
+                        window.viewingSelf = <% - JSON.stringify(isSelf) %>;
                     </script>
                     <script src="/js/profile.js"></script>
 </body>
