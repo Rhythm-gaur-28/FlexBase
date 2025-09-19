@@ -260,101 +260,99 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
   // ------ FOLLOWERS/FOLLOWING LIST ACTIONS ------
-// Remove follower functionality
-document.querySelectorAll('.btn-remove-follower').forEach(btn => {
-  btn.addEventListener('click', async (e) => {
-    const username = e.target.getAttribute('data-username');
-    if (!username) return;
-    
-    if (!confirm(`Remove ${username} from your followers?`)) return;
-    
-    e.target.disabled = true;
-    try {
-      const res = await fetch('/profile/remove-follower', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username })
-      });
+  // Remove follower functionality
+  document.querySelectorAll('.btn-remove-follower').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const username = e.target.getAttribute('data-username');
+      if (!username) return;
       
-      const data = await res.json();
-      if (data.success) {
-        // Remove user item from DOM
-        const userItem = e.target.closest('.user-item');
-        userItem.remove();
-        
-        // Update follower count
-        const followerCountEl = document.querySelector('[data-tab="followers"] .profile-count');
-        if (followerCountEl) {
-          let currentCount = parseInt(followerCountEl.textContent) || 0;
-          followerCountEl.textContent = Math.max(0, currentCount - 1);
-        }
-        
-        toastMessage(`${username} removed from followers`);
-      } else {
-        toastMessage(data.message || 'Failed to remove follower');
-      }
-    } catch {
-      toastMessage('Network error');
-    } finally {
-      e.target.disabled = false;
-    }
-  });
-});
-
-// Unfollow user functionality
-document.querySelectorAll('.btn-unfollow-user').forEach(btn => {
-  btn.addEventListener('click', async (e) => {
-    const username = e.target.getAttribute('data-username');
-    if (!username) return;
-    
-    if (!confirm(`Unfollow ${username}?`)) return;
-    
-    e.target.disabled = true;
-    try {
-      const res = await fetch('/profile/unfollow-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username })
-      });
+      if (!confirm(`Remove ${username} from your followers?`)) return;
       
-      const data = await res.json();
-      if (data.success) {
-        // Remove user item from DOM
-        const userItem = e.target.closest('.user-item');
-        userItem.remove();
+      e.target.disabled = true;
+      try {
+        const res = await fetch('/profile/remove-follower', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ username })
+        });
         
-        // Update following count
-        const followingCountEl = document.querySelector('[data-tab="following"] .profile-count');
-        if (followingCountEl) {
-          let currentCount = parseInt(followingCountEl.textContent) || 0;
-          followingCountEl.textContent = Math.max(0, currentCount - 1);
+        const data = await res.json();
+        if (data.success) {
+          // Remove user item from DOM
+          const userItem = e.target.closest('.user-item');
+          userItem.remove();
+          
+          // Update follower count
+          const followerCountEl = document.querySelector('[data-tab="followers"] .profile-count');
+          if (followerCountEl) {
+            let currentCount = parseInt(followerCountEl.textContent) || 0;
+            followerCountEl.textContent = Math.max(0, currentCount - 1);
+          }
+          
+          toastMessage(`${username} removed from followers`);
+        } else {
+          toastMessage(data.message || 'Failed to remove follower');
         }
-        
-        toastMessage(`Unfollowed ${username}`);
-      } else {
-        toastMessage(data.message || 'Failed to unfollow');
+      } catch {
+        toastMessage('Network error');
+      } finally {
+        e.target.disabled = false;
       }
-    } catch {
-      toastMessage('Network error');
-    } finally {
-      e.target.disabled = false;
-    }
+    });
   });
-});
 
-// Make usernames clickable to visit profiles
-document.querySelectorAll('.user-username').forEach(username => {
-  username.addEventListener('click', () => {
-    const usernameText = username.textContent.trim();
-    window.location.href = '/u/' + encodeURIComponent(usernameText);
+  // Unfollow user functionality
+  document.querySelectorAll('.btn-unfollow-user').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const username = e.target.getAttribute('data-username');
+      if (!username) return;
+      
+      if (!confirm(`Unfollow ${username}?`)) return;
+      
+      e.target.disabled = true;
+      try {
+        const res = await fetch('/profile/unfollow-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ username })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          // Remove user item from DOM
+          const userItem = e.target.closest('.user-item');
+          userItem.remove();
+          
+          // Update following count
+          const followingCountEl = document.querySelector('[data-tab="following"] .profile-count');
+          if (followingCountEl) {
+            let currentCount = parseInt(followingCountEl.textContent) || 0;
+            followingCountEl.textContent = Math.max(0, currentCount - 1);
+          }
+          
+          toastMessage(`Unfollowed ${username}`);
+        } else {
+          toastMessage(data.message || 'Failed to unfollow');
+        }
+      } catch {
+        toastMessage('Network error');
+      } finally {
+        e.target.disabled = false;
+      }
+    });
   });
-  username.style.cursor = 'pointer';
-  username.style.color = '#3b82f6';
-});
 
+  // Make usernames clickable to visit profiles
+  document.querySelectorAll('.user-username').forEach(username => {
+    username.addEventListener('click', () => {
+      const usernameText = username.textContent.trim();
+      window.location.href = '/u/' + encodeURIComponent(usernameText);
+    });
+  });
 
   // Toast message helper
   function toastMessage(message) {

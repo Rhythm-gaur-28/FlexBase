@@ -73,7 +73,20 @@
     transform-origin: left;
     transition: transform 0.25s cubic-bezier(.51, .01, .05, 1);
   }
-
+.nav-link::after,
+.collections-container .nav-link::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1.5px;
+  background: #f96c2b;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s cubic-bezier(.51, .01, .05, 1);
+}
   .nav-link:hover {
     color: #f96c2b;
   }

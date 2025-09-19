@@ -12,267 +12,280 @@
 </head>
 
 <body>
-    <% 
-      const person = typeof profileUser !== 'undefined' ? profileUser : user; 
-      const isSelf = typeof viewingSelf !== 'undefined' ? viewingSelf : true; 
-    %>
-    <%- include('partials/navbar') %>
-        <div class="profile-dashboard-container">
-            <!-- Sidebar Section -->
-            <aside class="profile-sidebar">
-                <div class="profile-pic-username">
-                    <img src="<%= person.profileImage || '/images/default-profile.jpg' %>" class="profile-avatar-big"
-                        alt="Profile Photo">
-                    <div class="profile-username-big">
-                        <%= person.username %>
-                    </div>
-                    <div class="profile-about">
-                        <%= person.bio ? person.bio : 'No about me set. Add something cool here!' %>
-                    </div>
-                </div>
-                <nav class="profile-side-nav">
-                    <button class="side-nav-btn active" data-tab="followers">
-                        <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
-                                stroke-width="2" viewBox="0 0 24 24">
-                                <circle cx="12" cy="7" r="4" />
-                                <path d="M2 21c0-4.5 5-7 10-7s10 2.5 10 7" />
-                            </svg></span>
-                        Followers
-                    </button>
-                    <button class="side-nav-btn" data-tab="following">
-                        <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
-                                stroke-width="2" viewBox="0 0 24 24">
-                                <circle cx="12" cy="7" r="4" />
-                                <path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" />
-                            </svg></span>
-                        Following
-                    </button>
-                    <button class="side-nav-btn" data-tab="posts">
-                        <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
-                                stroke-width="2" viewBox="0 0 24 24">
-                                <rect x="4" y="4" width="16" height="16" rx="3" />
-                                <path d="M4 8h16" />
-                            </svg></span>
-                        Posts
-                    </button>
-                    <button class="side-nav-btn" data-tab="collections">
-                        <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
-                                stroke-width="2" viewBox="0 0 24 24">
-                                <path d="M3 6h18M3 12h18M3 18h18" />
-                            </svg></span>
-                        Collections
-                    </button>
-                    <% if (isSelf) { %>
-                    <button class="side-nav-btn" data-tab="saved">
-                        <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
-                                stroke-width="2" viewBox="0 0 24 24">
-                                <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 2 0z" />
-                            </svg></span>
-                        Saved
-                    </button>
-                    <% } %>
-                </nav>
-
-                <!-- Follow Button Section - appears only for other users -->
-                <% if (!isSelf) { %>
-                  <form id="followForm" style="margin-top:1.8rem; text-align:center;">
-                    <button type="submit" id="followBtn" class="btn-primary" style="font-size:1.05rem;">
-                      <%= typeof isFollowing !== 'undefined' && isFollowing ? 'Unfollow' : 'Follow' %>
-                    </button>
-                  </form>
-                <% } %>
-
-                <!-- Edit Profile Button - appears only for own profile -->
-                <% if (isSelf) { %>
-                <button class="edit-profile-btn">Edit Profile</button>
-                <% } %>
-            </aside>
-
-            <!-- Main Content Area -->
-            <section class="profile-main-content">
-                <div class="profile-tab-pane active" data-tab="followers">
-                    <div class="profile-tab-title">
-                        Followers
-                        <span class="profile-count">
-                            <%= followers ? followers.length : 0 %>
-                        </span>
-                    </div>
-                    <% if (followers && followers.length > 0) { %>
-                        <div class="user-list">
-                            <% followers.forEach(function(follower) { %>
-                                <div class="user-item" data-username="<%= follower.username %>">
-                                    <img src="<%= follower.profileImage || '/images/default-profile.jpg' %>" alt="<%= follower.username %>" class="user-avatar">
-                                    <div class="user-info">
-                                        <div class="user-username"><%= follower.username %></div>
-                                    </div>
-                                    <div class="user-actions">
-                                        <% if (isSelf) { %>
-                                            <button class="btn-remove-follower" data-username="<%= follower.username %>">Remove</button>
-                                        <% } %>
-                                    </div>
-                                </div>
-                            <% }) %>
+    <% const person=typeof profileUser !=='undefined' ? profileUser : user; const isSelf=typeof viewingSelf
+        !=='undefined' ? viewingSelf : true; %>
+        <%- include('partials/navbar') %>
+            <div class="profile-dashboard-container">
+                <!-- Sidebar Section -->
+                <aside class="profile-sidebar">
+                    <div class="profile-pic-username">
+                        <img src="<%= person.profileImage || '/images/default-profile.jpg' %>"
+                            class="profile-avatar-big" alt="Profile Photo">
+                        <div class="profile-username-big">
+                            <%= person.username %>
                         </div>
-                    <% } else { %>
+                        <div class="profile-about">
+                            <%= person.bio ? person.bio : 'No about me set. Add something cool here!' %>
+                        </div>
+                    </div>
+                    <nav class="profile-side-nav">
+                        <button class="side-nav-btn active" data-tab="followers">
+                            <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
+                                    stroke-width="2" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="4" />
+                                    <path d="M2 21c0-4.5 5-7 10-7s10 2.5 10 7" />
+                                </svg></span>
+                            Followers
+                        </button>
+                        <button class="side-nav-btn" data-tab="following">
+                            <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
+                                    stroke-width="2" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="4" />
+                                    <path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" />
+                                </svg></span>
+                            Following
+                        </button>
+                        <button class="side-nav-btn" data-tab="posts">
+                            <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
+                                    stroke-width="2" viewBox="0 0 24 24">
+                                    <rect x="4" y="4" width="16" height="16" rx="3" />
+                                    <path d="M4 8h16" />
+                                </svg></span>
+                            Posts
+                        </button>
+                        <button class="side-nav-btn" data-tab="collections">
+                            <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
+                                    stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M3 6h18M3 12h18M3 18h18" />
+                                </svg></span>
+                            Collections
+                        </button>
+                        <% if (isSelf) { %>
+                            <button class="side-nav-btn" data-tab="saved">
+                                <span class="side-nav-icon"><svg width="22" height="22" fill="none" stroke="#727272"
+                                        stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+                                    </svg></span>
+                                Saved
+                            </button>
+                            <% } %>
+                    </nav>
+
+                    <!-- Follow Button Section - appears only for other users -->
+                    <% if (!isSelf) { %>
+                        <form id="followForm" style="margin-top:1.8rem; text-align:center;">
+                            <button type="submit" id="followBtn" class="btn-primary">
+                                <%= typeof isFollowing !=='undefined' && isFollowing ? 'Unfollow' : 'Follow' %>
+                            </button>
+                        </form>
+                        <% } %>
+
+                            <!-- Edit Profile Button - appears only for own profile -->
+                            <% if (isSelf) { %>
+                                <button class="edit-profile-btn">Edit Profile</button>
+                                <% } %>
+                </aside>
+
+                <!-- Main Content Area -->
+                <section class="profile-main-content">
+                    <div class="profile-tab-pane active" data-tab="followers">
+                        <div class="profile-tab-title">
+                            Followers
+                            <span class="profile-count">
+                                <%= followers ? followers.length : 0 %>
+                            </span>
+                        </div>
+                        <% if (followers && followers.length> 0) { %>
+                            <div class="user-list">
+                                <% followers.forEach(function(follower) { %>
+                                    <div class="user-item" data-username="<%= follower.username %>">
+                                        <img src="<%= follower.profileImage || '/images/default-profile.jpg' %>"
+                                            alt="<%= follower.username %>" class="user-avatar">
+                                        <div class="user-info">
+                                            <div class="user-username">
+                                                <%= follower.username %>
+                                            </div>
+                                        </div>
+                                        <div class="user-actions">
+                                            <% if (isSelf) { %>
+                                                <button class="btn-remove-follower"
+                                                    data-username="<%= follower.username %>">Remove</button>
+                                                <% } %>
+                                        </div>
+                                    </div>
+                                    <% }) %>
+                            </div>
+                            <% } else { %>
+                                <div class="profile-tab-placeholder">
+                                    <%= isSelf ? 'No followers yet.' : 'This user has no followers yet.' %>
+                                </div>
+                                <% } %>
+                    </div>
+
+                    <div class="profile-tab-pane" data-tab="following">
+                        <div class="profile-tab-title">
+                            Following
+                            <span class="profile-count">
+                                <%= following ? following.length : 0 %>
+                            </span>
+                        </div>
+                        <% if (following && following.length> 0) { %>
+                            <div class="user-list">
+                                <% following.forEach(function(followedUser) { %>
+                                    <div class="user-item" data-username="<%= followedUser.username %>">
+                                        <img src="<%= followedUser.profileImage || '/images/default-profile.jpg' %>"
+                                            alt="<%= followedUser.username %>" class="user-avatar">
+                                        <div class="user-info">
+                                            <div class="user-username">
+                                                <%= followedUser.username %>
+                                            </div>
+                                        </div>
+                                        <div class="user-actions">
+                                            <% if (isSelf) { %>
+                                                <button class="btn-unfollow-user"
+                                                    data-username="<%= followedUser.username %>">Unfollow</button>
+                                                <% } %>
+                                        </div>
+                                    </div>
+                                    <% }) %>
+                            </div>
+                            <% } else { %>
+                                <div class="profile-tab-placeholder">
+                                    <%= isSelf ? 'Not following anyone yet.' : 'This user is not following anyone yet.'
+                                        %>
+                                </div>
+                                <% } %>
+                    </div>
+
+                    <div class="profile-tab-pane" data-tab="posts">
+                        <div class="profile-tab-title">
+                            Posts
+                            <span class="profile-count">
+                                <%= posts ? posts.length : 0 %>
+                            </span>
+                        </div>
                         <div class="profile-tab-placeholder">
-                            <%= isSelf ? 'No followers yet.' : 'This user has no followers yet.' %>
+                            [User posts will display here with images and icons]
                         </div>
-                    <% } %>
-                </div>
-                
-                <div class="profile-tab-pane" data-tab="following">
-                    <div class="profile-tab-title">
-                        Following
-                        <span class="profile-count">
-                            <%= following ? following.length : 0 %>
-                        </span>
                     </div>
-                    <% if (following && following.length > 0) { %>
-                        <div class="user-list">
-                            <% following.forEach(function(followedUser) { %>
-                                <div class="user-item" data-username="<%= followedUser.username %>">
-                                    <img src="<%= followedUser.profileImage || '/images/default-profile.jpg' %>" alt="<%= followedUser.username %>" class="user-avatar">
-                                    <div class="user-info">
-                                        <div class="user-username"><%= followedUser.username %></div>
-                                    </div>
-                                    <div class="user-actions">
-                                        <% if (isSelf) { %>
-                                            <button class="btn-unfollow-user" data-username="<%= followedUser.username %>">Unfollow</button>
-                                        <% } %>
-                                    </div>
-                                </div>
-                            <% }) %>
-                        </div>
-                    <% } else { %>
-                        <div class="profile-tab-placeholder">
-                            <%= isSelf ? 'Not following anyone yet.' : 'This user is not following anyone yet.' %>
-                        </div>
-                    <% } %>
-                </div>
 
-                <div class="profile-tab-pane" data-tab="posts">
-                    <div class="profile-tab-title">
-                        Posts
-                        <span class="profile-count">
-                            <%= posts ? posts.length : 0 %>
-                        </span>
-                    </div>
-                    <div class="profile-tab-placeholder">
-                        [User posts will display here with images and icons]
-                    </div>
-                </div>
-
-                <div class="profile-tab-pane" data-tab="collections">
-                    <div class="profile-tab-title">
-                        Collections
-                        <span class="profile-count">
-                            <%= collections ? collections.length : 0 %>
-                        </span>
-                        <span class="profile-total-value">
-                            $<%= collections.reduce((sum, c)=> sum + (c.marketPrice || 0), 0) %> Total Market Value
-                        </span>
-                    </div>
-                    <% if (collections && collections.length> 0) { %>
-                        <div class="collection-grid">
-                            <% collections.forEach(function(coll, idx) { %>
-                                <div class="collection-card" data-index="<%= idx %>">
-                                    <div class="collection-img-wrap">
-                                        <img src="<%= coll.images[0] %>" alt="<%= coll.brand %> shoe" />
-                                        <% if (coll.images.length> 1) { %>
-                                            <span class="multi-icon" title="Multiple Images">&#x1F5BC;</span>
-                                            <% } %>
-                                    </div>
-                                    <div class="collection-brand">
-                                        <%= coll.brand %>
-                                    </div>
-                                    <div class="collection-market-price">$<%= coll.marketPrice %>
-                                    </div>
-                                </div>
-                                <% }) %>
+                    <div class="profile-tab-pane" data-tab="collections">
+                        <div class="profile-tab-title">
+                            Collections
+                            <span class="profile-count">
+                                <%= collections ? collections.length : 0 %>
+                            </span>
+                            <span class="profile-total-value">
+                                $<%= collections.reduce((sum, c)=> sum + (c.marketPrice || 0), 0) %> Total Market Value
+                            </span>
                         </div>
-                        <!-- Modal HTML -->
-                        <div id="collectionModal" class="collection-modal">
-                            <div class="collection-modal-content">
-                                <span id="closeModalBtn" class="close-modal">&times;</span>
-                                <div class="modal-images">
-                                    <button class="arrow arrow-left">&#10094;</button>
-                                    <div class="modal-img-slider">
-                                        <!-- images injected by JS -->
+                        <% if (collections && collections.length> 0) { %>
+                            <div class="collection-grid">
+                                <% collections.forEach(function(coll, idx) { %>
+                                    <div class="collection-card" data-index="<%= idx %>">
+                                        <div class="collection-img-wrap">
+                                            <img src="<%= coll.images[0] %>" alt="<%= coll.brand %> shoe" />
+                                            <% if (coll.images.length> 1) { %>
+                                                <span class="multi-icon" title="Multiple Images">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z" />
+                                                        <path
+                                                            d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                                                    </svg>
+                                                </span>
+                                                <% } %>
+                                        </div>
+                                        <div class="collection-brand">
+                                            <%= coll.brand %>
+                                        </div>
+                                        <div class="collection-market-price">$<%= coll.marketPrice %>
+                                        </div>
                                     </div>
-                                    <button class="arrow arrow-right">&#10095;</button>
-                                    <div class="slider-indicator"></div>
-                                    <div class="slider-counter"></div>
-                                </div>
-                                <div class="modal-meta">
-                                    <div class="modal-brand"></div>
-                                    <div class="modal-prices"></div>
-                                    <div class="modal-date"></div>
-                                    <div class="ownership-timeline">
-                                        <!-- timeline injected by JS -->
+                                    <% }) %>
+                            </div>
+                            <!-- Modal HTML -->
+                            <div id="collectionModal" class="collection-modal">
+                                <div class="collection-modal-content">
+                                    <span id="closeModalBtn" class="close-modal">&times;</span>
+                                    <div class="modal-images">
+                                        <button class="arrow arrow-left">&#10094;</button>
+                                        <div class="modal-img-slider">
+                                            <!-- images injected by JS -->
+                                        </div>
+                                        <button class="arrow arrow-right">&#10095;</button>
+                                        <div class="slider-indicator"></div>
+                                        <div class="slider-counter"></div>
+                                    </div>
+                                    <div class="modal-meta">
+                                        <div class="modal-brand"></div>
+                                        <div class="modal-prices"></div>
+                                        <div class="modal-date"></div>
+                                        <div class="ownership-timeline">
+                                            <!-- timeline injected by JS -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <% } else { %>
+                                <div class="profile-tab-placeholder">No shoes in your collection yet.</div>
+                                <% } %>
+                    </div>
+
+                    <% if (isSelf) { %>
+                        <div class="profile-tab-pane" data-tab="saved">
+                            <div class="profile-tab-title">Saved</div>
+                            <div class="profile-tab-placeholder">[Saved posts and collections will display here]</div>
                         </div>
-                        <% } else { %>
-                            <div class="profile-tab-placeholder">No shoes in your collection yet.</div>
-                            <% } %>
+                        <% } %>
+                </section>
+            </div>
+
+            <% if (isSelf) { %>
+                <!-- Edit Profile Modal -->
+                <div id="editProfileModal" class="modal">
+                    <div class="modal-content slide-up">
+                        <h2>Edit Profile</h2>
+                        <form id="editProfileForm" enctype="multipart/form-data" autocomplete="off">
+                            <div class="profile-image-edit">
+                                <label for="profilePicture" class="image-upload-label">
+                                    <img src="<%= user.profileImage || '/images/default-profile.jpg' %>" alt="Profile"
+                                        id="profile-preview" class="edit-profile-avatar" />
+                                    <span class="change-image-btn">Change Image</span>
+                                </label>
+                                <input type="file" id="profilePicture" name="profilePicture" accept="image/*"
+                                    style="display:none;">
+                            </div>
+                            <label for="bio">Bio:</label>
+                            <textarea id="bio" name="bio" rows="4"
+                                placeholder="Tell us a bit about yourself..."><%= user.bio || '' %></textarea>
+                            <div class="modal-buttons">
+                                <button type="button" id="cancelBtn" class="btn btn-cancel">Cancel</button>
+                                <button type="submit" class="btn btn-save">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-                <% if (isSelf) { %>
-                <div class="profile-tab-pane" data-tab="saved">
-                    <div class="profile-tab-title">Saved</div>
-                    <div class="profile-tab-placeholder">[Saved posts and collections will display here]</div>
+                <!-- Confirmation Dialog -->
+                <div id="confirmCancel" class="modal">
+                    <div class="modal-content">
+                        <p>Are you sure you want to cancel your changes?</p>
+                        <button id="confirmYes" class="btn btn-danger">Yes</button>
+                        <button id="confirmNo" class="btn">No</button>
+                    </div>
                 </div>
                 <% } %>
-            </section>
-        </div>
-        
-        <% if (isSelf) { %>
-        <!-- Edit Profile Modal -->
-        <div id="editProfileModal" class="modal">
-            <div class="modal-content slide-up">
-                <h2>Edit Profile</h2>
-                <form id="editProfileForm" enctype="multipart/form-data" autocomplete="off">
-                    <div class="profile-image-edit">
-                        <label for="profilePicture" class="image-upload-label">
-                            <img src="<%= user.profileImage || '/images/default-profile.jpg' %>" alt="Profile"
-                                id="profile-preview" class="edit-profile-avatar" />
-                            <span class="change-image-btn">Change Image</span>
-                        </label>
-                        <input type="file" id="profilePicture" name="profilePicture" accept="image/*"
-                            style="display:none;">
-                    </div>
-                    <label for="bio">Bio:</label>
-                    <textarea id="bio" name="bio" rows="4"
-                        placeholder="Tell us a bit about yourself..."><%= user.bio || '' %></textarea>
-                    <div class="modal-buttons">
-                        <button type="button" id="cancelBtn" class="btn btn-cancel">Cancel</button>
-                        <button type="submit" class="btn btn-save">Save Changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
 
-        <!-- Confirmation Dialog -->
-        <div id="confirmCancel" class="modal">
-            <div class="modal-content">
-                <p>Are you sure you want to cancel your changes?</p>
-                <button id="confirmYes" class="btn btn-danger">Yes</button>
-                <button id="confirmNo" class="btn">No</button>
-            </div>
-        </div>
-        <% } %>
+                    <!-- Notification Toast -->
+                    <div id="toast" class="toast"></div>
 
-        <!-- Notification Toast -->
-        <div id="toast" class="toast"></div>
-
-        <script>
-            // Pass all collections as a JS variable
-            const allCollections = <%- JSON.stringify(collections) %>;
-            // expose viewingSelf to JS if needed
-            window.viewingSelf = <%- JSON.stringify(isSelf) %>;
-        </script>
-        <script src="/js/profile.js"></script>
+                    <script>
+                        // Pass all collections as a JS variable
+                        const allCollections = <%- JSON.stringify(collections) %>;
+                        // expose viewingSelf to JS if needed
+                        window.viewingSelf = <%- JSON.stringify(isSelf) %>;
+                    </script>
+                    <script src="/js/profile.js"></script>
 </body>
 
 </html>
