@@ -1,16 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><title>Login - FlexBase</title></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - FlexBase</title>
+  <link rel="stylesheet" href="/css/login.css">
+</head>
 <body>
-  <h1>Login</h1>
-  <% if (typeof error !== 'undefined' && error) { %>
-  <p style="color: red; margin-bottom: 10px;"><%= decodeURIComponent(error) %></p>
-<% } %>
-  <form action="/login" method="POST">
-    <label>Email: <input type="email" name="email" required></label><br>
-    <label>Password: <input type="password" name="password" required></label><br>
-    <button type="submit">Login</button>
-  </form>
-  <a href="/register">Don't have an account? Register</a>
+  <%- include('partials/navbar') %>
+  <div class="auth-container">
+    <!-- Form Section -->
+    <div class="form-section">
+      <div class="logo">FlexBase</div>
+      <!-- <h1 class="main-heading">Welcome<br>Back</h1> -->
+      
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="error-message"><%= decodeURIComponent(error) %></div>
+      <% } %>
+      
+      <form action="/login" method="POST">
+        <div class="form-group">
+          <input type="email" name="email" class="form-input" placeholder="Email" required>
+        </div>
+        <div class="form-group">
+          <input type="password" name="password" class="form-input" placeholder="Password" required>
+        </div>
+        <button type="submit" class="login-btn">Sign In</button>
+      </form>
+      
+      <a href="/register" class="register-link">Don't have an account? Register</a>
+    </div>
+
+    <!-- Image Section -->
+    <div class="image-section">
+      <img src="/images/img2.png" alt="Login Image">
+    </div>
+  </div>
 </body>
 </html>

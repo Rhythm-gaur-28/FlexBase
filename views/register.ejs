@@ -1,15 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><title>Register - FlexBase</title></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - FlexBase</title>
+  <link rel="stylesheet" href="/css/register.css">
+</head>
 <body>
-  <h1>Register</h1>
-  <% if (error) { %><p style="color:red;"><%= error %></p><% } %>
-  <form action="/register" method="POST">
-    <label>Username: <input type="text" name="username" required></label><br>
-    <label>Email: <input type="email" name="email" required></label><br>
-    <label>Password: <input type="password" name="password" required></label><br>
-    <button type="submit">Register</button>
-  </form>
-  <a href="/login">Already have an account? Login</a>
+  <%- include('partials/navbar') %>
+  <div class="auth-container">
+    <!-- Form Section -->
+    <div class="form-section">
+      <div class="logo">FlexBase</div>
+      <!-- <h1 class="main-heading">Just<br>Dropped</h1> -->
+      
+      <% if (error) { %>
+        <div class="error-message"><%= error %></div>
+      <% } %>
+      
+      <form action="/register" method="POST">
+        <div class="form-group">
+          <input type="text" name="username" class="form-input" placeholder="Username" required>
+        </div>
+        <div class="form-group">
+          <input type="email" name="email" class="form-input" placeholder="Email" required>
+        </div>
+        <div class="form-group">
+          <input type="password" name="password" class="form-input" placeholder="Password" required>
+        </div>
+        <button type="submit" class="register-btn">Sign Up</button>
+      </form>
+      
+      <a href="/login" class="login-link">Already have an account? Login</a>
+    </div>
+
+    <!-- Image Section -->
+    <div class="image-section">
+      <img src="/images/img2.png" alt="Register Image">
+    </div>
+  </div>
 </body>
 </html>

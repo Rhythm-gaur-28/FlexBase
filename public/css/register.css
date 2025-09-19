@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Poppins', sans-serif;
+}
+
+body {
+min-height: 100vh;
+background: #ffffff;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 20px;
+}
+
+.auth-container {
+width: 100%;
+max-width: 800px;
+height: 550px;
+background: #ffffff;
+border-radius: 24px;
+box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+display: flex;
+overflow: hidden;
+}
+
+.form-section {
+flex: 1;
+padding: 80px 60px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+background: #ffffff;
+}
+
+.image-section {
+flex: 1;
+position: relative;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+}
+
+.image-section img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+object-position: center;
+}
+
+.logo {
+font-size: 2rem;
+font-weight: 900;
+color: #1a1a1a;
+margin-top: 25px;
+margin-bottom: 25px;
+letter-spacing: 2px;
+text-align: center;
+}
+
+.main-heading {
+font-size: 2.5rem;
+font-weight: 900;
+color: #1a1a1a;
+text-transform: uppercase;
+line-height: 0.9;
+margin-bottom: 50px;
+text-shadow: none;
+text-align: center;
+}
+
+.error-message {
+background: rgba(255, 59, 59, 0.1);
+border: 1px solid #ff3b3b;
+color: #d63031;
+padding: 12px 20px;
+border-radius: 12px;
+margin-bottom: 30px;
+font-size: 0.9rem;
+}
+
+.form-group {
+margin-bottom: 25px;
+}
+
+.form-input {
+width: 100%;
+max-width: 400px;
+padding: 18px 20px;
+background: #f8f9fa;
+border: 2px solid #e9ecef;
+border-radius: 12px;
+color: #1a1a1a;
+font-size: 1rem;
+transition: all 0.3s ease;
+font-family: 'Cormorant Garamond', serif;
+}
+
+.form-input::placeholder {
+color: #6c757d;
+}
+
+.form-input:focus {
+outline: none;
+border-color: #6c5ce7;
+background: #ffffff;
+box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+}
+
+.register-btn {
+width: 100%;
+padding: 18px;
+background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+border: none;
+border-radius: 12px;
+color: white;
+font-size: 1.1rem;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.3s ease;
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-top: 20px;
+font-family: 'Cormorant Garamond', serif;
+}
+
+.register-btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
+background: linear-gradient(135deg, #5f4fcf, #9187fc);
+}
+
+.login-link {
+display: block;
+text-align: center;
+color: #6c757d;
+text-decoration: none;
+margin-top: 10px;
+transition: color 0.3s ease;
+}
+
+.login-link:hover {
+color: #6c5ce7;
+}
+
+@media (max-width: 1024px) {
+.auth-container {
+flex-direction: column;
+height: auto;
+max-width: 500px;
+}
+
+.form-section {
+padding: 60px 40px;
+}
+
+.image-section {
+height: 300px;
+}
+
+.main-heading {
+font-size: 2.8rem;
+}
+}
+
+@media (max-width: 768px) {
+body {
+padding: 10px;
+}
+
+.auth-container {
+border-radius: 16px;
+}
+
+.form-section {
+padding: 40px 30px;
+}
+
+.main-heading {
+font-size: 2.2rem;
+}
+
+.logo {
+font-size: 1.6rem;
+}
+}
