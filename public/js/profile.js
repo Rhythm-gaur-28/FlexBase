@@ -353,6 +353,273 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/u/' + encodeURIComponent(usernameText);
     });
   });
+// Add this to your existing profile.js after the collections modal code
+
+// ------ POST MODAL ------
+const postModal = document.getElementById('postModal');
+const postCards = document.querySelectorAll('.post-card');
+
+if (postModal && postCards.length > 0) {
+  const closePostBtn = document.getElementById('closePostModalBtn');
+  const postImgSlider = postModal.querySelector('.post-modal-img-slider');
+  const postSliderInd = postModal.querySelector('.post-slider-indicator');
+  const postSliderCount = postModal.querySelector('.post-slider-counter');
+  const postLeftArrow = postModal.querySelector('.post-arrow-left');
+  const postRightArrow = postModal.querySelector('.post-arrow-right');
+  
+  // Post details elements
+  const postUserAvatar = postModal.querySelector('.post-user-avatar');
+  const postUsername = postModal.querySelector('.post-username');
+  const postTimestamp = postModal.querySelector('.post-timestamp');
+  const postCaptionText = postModal.querySelector('.post-caption-text');
+  const postHashtags = postModal.querySelector('.post-hashtags');
+  const likeBtn = postModal.querySelector('#likeBtn');
+  const likesCount = postModal.querySelector('.likes-count');
+  const commentToggle = postModal.querySelector('#commentToggle');
+  const commentsCount = postModal.querySelector('.comments-count');
+  const commentsList = postModal.querySelector('#commentsList');
+  const commentInput = postModal.querySelector('#commentInput');
+  const submitCommentBtn = postModal.querySelector('#submitComment');
+  
+  let currentPostIdx = 0;
+  let currentPostImageIdx = 0;
+  let currentPostData = null;
+
+  // Post card click handlers
+  postCards.forEach(card => {
+    card.addEventListener('click', async () => {
+      const postId = card.getAttribute('data-post-id');
+      await openPostModal(postId);
+    });
+  });
+
+  async function openPostModal(postId) {
+    try {
+      // Fetch post data
+      const response = await fetch(`/api/posts/${postId}`, {
+        credentials: 'include'
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        currentPostData = result.post;
+        currentPostImageIdx = 0;
+        postModal.classList.add('open');
+        updatePostModal();
+      }
+    } catch (error) {
+      console.error('Error loading post:', error);
+    }
+  }
+
+  function updatePostModal() {
+    if (!currentPostData) return;
+    
+    // Update images
+    updatePostImages();
+    
+    // Update user info
+    postUserAvatar.src = currentPostData.user.profileImage || '/images/default-profile.jpg';
+    postUsername.textContent = currentPostData.user.username;
+    postTimestamp.textContent = new Date(currentPostData.createdAt).toLocaleDateString();
+    
+    // Update caption
+    postCaptionText.textContent = currentPostData.caption || '';
+    
+    // Update hashtags
+    postHashtags.innerHTML = '';
+    if (currentPostData.hashtags && currentPostData.hashtags.length > 0) {
+      currentPostData.hashtags.forEach(tag => {
+        const hashtagEl = document.createElement('span');
+        hashtagEl.className = 'post-hashtag';
+        hashtagEl.textContent = '#' + tag;
+        postHashtags.appendChild(hashtagEl);
+      });
+    }
+    
+    // Update like button
+    likeBtn.classList.toggle('liked', currentPostData.isLiked);
+    likesCount.textContent = currentPostData.likesCount || 0;
+    
+    // Update comments count
+    commentsCount.textContent = currentPostData.commentsCount || 0;
+    
+    // Load comments
+    loadComments();
+    
+    // Make username clickable
+    postUsername.onclick = () => {
+      window.location.href = '/u/' + currentPostData.user.username;
+    };
+  }
+
+  function updatePostImages() {
+    postImgSlider.innerHTML = '';
+    if (!currentPostData.images || !currentPostData.images.length) return;
+    
+    currentPostData.images.forEach((src, i) => {
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.display = (i === currentPostImageIdx ? 'block' : 'none');
+      postImgSlider.appendChild(img);
+    });
+    
+    updatePostSliderNav();
+  }
+
+  function updatePostSliderNav() {
+    const imgs = postImgSlider.querySelectorAll('img');
+    imgs.forEach((img, i) => img.style.display = (i === currentPostImageIdx ? 'block' : 'none'));
+    
+    // Update indicators
+    postSliderInd.innerHTML = '';
+    imgs.forEach((_, i) => {
+      const dot = document.createElement('span');
+      dot.className = (i === currentPostImageIdx ? 'active' : '');
+      dot.onclick = () => { 
+        currentPostImageIdx = i; 
+        updatePostSliderNav(); 
+      };
+      postSliderInd.appendChild(dot);
+    });
+    
+    // Update counter
+    postSliderCount.textContent = `${currentPostImageIdx + 1}/${imgs.length}`;
+    
+    // Show/hide arrows
+    postLeftArrow.style.display = imgs.length > 1 ? 'flex' : 'none';
+    postRightArrow.style.display = imgs.length > 1 ? 'flex' : 'none';
+    postSliderInd.style.display = imgs.length > 1 ? 'block' : 'none';
+  }
+
+  // Arrow navigation
+  if (postLeftArrow) {
+    postLeftArrow.onclick = () => {
+      if (currentPostImageIdx > 0) {
+        currentPostImageIdx--;
+        updatePostSliderNav();
+      }
+    };
+  }
+
+  if (postRightArrow) {
+    postRightArrow.onclick = () => {
+      if (currentPostData && currentPostImageIdx < currentPostData.images.length - 1) {
+        currentPostImageIdx++;
+        updatePostSliderNav();
+      }
+    };
+  }
+
+  // Like button functionality
+  if (likeBtn) {
+    likeBtn.addEventListener('click', async () => {
+      if (!currentPostData) return;
+      
+      try {
+        const response = await fetch(`/api/posts/${currentPostData._id}/like`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          currentPostData.isLiked = result.isLiked;
+          currentPostData.likesCount = result.likesCount;
+          likeBtn.classList.toggle('liked', result.isLiked);
+          likesCount.textContent = result.likesCount;
+        }
+      } catch (error) {
+        console.error('Error toggling like:', error);
+      }
+    });
+  }
+
+  // Submit comment
+  if (submitCommentBtn) {
+    submitCommentBtn.addEventListener('click', async () => {
+      const text = commentInput.value.trim();
+      if (!text || !currentPostData) return;
+      
+      try {
+        submitCommentBtn.disabled = true;
+        const response = await fetch(`/api/posts/${currentPostData._id}/comment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ text })
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          currentPostData.comments.push(result.comment);
+          currentPostData.commentsCount = result.commentsCount;
+          commentsCount.textContent = result.commentsCount;
+          commentInput.value = '';
+          loadComments();
+        }
+      } catch (error) {
+        console.error('Error adding comment:', error);
+      } finally {
+        submitCommentBtn.disabled = false;
+      }
+    });
+  }
+
+  // Enter key to submit comment
+  if (commentInput) {
+    commentInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submitCommentBtn.click();
+      }
+    });
+  }
+
+  function loadComments() {
+    if (!currentPostData.comments) return;
+    
+    commentsList.innerHTML = '';
+    currentPostData.comments.forEach(comment => {
+      const commentEl = document.createElement('div');
+      commentEl.className = 'comment-item';
+      
+      const timeAgo = getTimeAgo(new Date(comment.createdAt));
+      
+      commentEl.innerHTML = `
+        <img src="${comment.user.profileImage || '/images/default-profile.jpg'}" alt="${comment.user.username}" class="comment-avatar">
+        <div class="comment-content">
+          <div class="comment-username" onclick="window.location.href='/u/${comment.user.username}'">${comment.user.username}</div>
+          <div class="comment-text">${comment.text}</div>
+          <div class="comment-timestamp">${timeAgo}</div>
+        </div>
+      `;
+      
+      commentsList.appendChild(commentEl);
+    });
+    
+    // Scroll to bottom
+    commentsList.scrollTop = commentsList.scrollHeight;
+  }
+
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return Math.floor(diffInSeconds / 60) + 'm ago';
+    if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + 'h ago';
+    if (diffInSeconds < 604800) return Math.floor(diffInSeconds / 86400) + 'd ago';
+    return date.toLocaleDateString();
+  }
+
+  // Close modal
+  if (closePostBtn) {
+    closePostBtn.onclick = () => {
+      postModal.classList.remove('open');
+    };
+  }
+}
 
   // Toast message helper
   function toastMessage(message) {

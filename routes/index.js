@@ -128,10 +128,10 @@ router.get('/profile', authRequired, async (req, res) => {
   const target = req.user;
   const followers = await User.find({ following: req.user._id }).select('username profileImage').lean();
   const following = await User.find({ _id: { $in: req.user.following } }).select('username profileImage').lean();
-  const posts = await Post.find({ user: target._id }).lean(); // Add this line
+  const posts = await Post.find({ user: target._id }).populate('user', 'username profileImage').lean();
   const collections = await Collection.find({ user: target._id }).lean();
   const saved = [];
-  
+
   res.render('profile', {
     user: req.user,
     profileUser: target,
@@ -186,16 +186,16 @@ router.get('/api/users/search', authRequired, async (req, res) => {
 // Example public profile by username
 router.get('/u/:username', authRequired, async (req, res) => {
   const target = await User.findOne({ username: req.params.username }).lean();
-  if (!target) return res.status(404).render('404'); 
+  if (!target) return res.status(404).render('404');
   const viewingSelf = String(target._id) === String(req.user._id);
   if (viewingSelf) return res.redirect('/profile');
-  
+
   const followers = await User.find({ _id: { $in: target.followers } }).select('username profileImage').lean();
   const following = await User.find({ _id: { $in: target.following } }).select('username profileImage').lean();
-  const posts = await Post.find({ user: target._id }).lean(); // Add this line
+  const posts = await Post.find({ user: target._id }).populate('user', 'username profileImage').lean();
   const collections = await Collection.find({ user: target._id }).lean();
   const isFollowing = req.user.following.map(id => String(id)).includes(String(target._id));
-  
+
   res.render('profile', {
     user: req.user,
     profileUser: target,
@@ -217,11 +217,11 @@ router.post('/u/:username/follow', authRequired, async (req, res) => {
     }
     const target = await User.findOne({ username: req.params.username });
     if (!target) return res.status(404).json({ success: false, message: 'User not found.' });
-    
+
     if (target.followers.includes(req.user._id)) {
       return res.status(409).json({ success: false, message: 'Already following.' });
     }
-    
+
     target.followers.push(req.user._id);
     req.user.following.push(target._id);
     await target.save();
@@ -239,7 +239,7 @@ router.post('/u/:username/unfollow', authRequired, async (req, res) => {
     }
     const target = await User.findOne({ username: req.params.username });
     if (!target) return res.status(404).json({ success: false, message: 'User not found.' });
-    
+
     target.followers = target.followers.filter(fid => String(fid) !== String(req.user._id));
     req.user.following = req.user.following.filter(fid => String(fid) !== String(target._id));
     await target.save();
@@ -254,18 +254,18 @@ router.post('/profile/remove-follower', authRequired, async (req, res) => {
   try {
     const { username } = req.body;
     if (!username) return res.status(400).json({ success: false, message: 'Username required' });
-    
+
     const followerUser = await User.findOne({ username });
     if (!followerUser) return res.status(404).json({ success: false, message: 'User not found' });
-    
+
     // Remove from your followers list
     req.user.followers = req.user.followers.filter(fid => String(fid) !== String(followerUser._id));
     // Remove from their following list
     followerUser.following = followerUser.following.filter(fid => String(fid) !== String(req.user._id));
-    
+
     await req.user.save();
     await followerUser.save();
-    
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
@@ -277,18 +277,18 @@ router.post('/profile/unfollow-user', authRequired, async (req, res) => {
   try {
     const { username } = req.body;
     if (!username) return res.status(400).json({ success: false, message: 'Username required' });
-    
+
     const targetUser = await User.findOne({ username });
     if (!targetUser) return res.status(404).json({ success: false, message: 'User not found' });
-    
+
     // Remove from your following list
     req.user.following = req.user.following.filter(fid => String(fid) !== String(targetUser._id));
     // Remove from their followers list
     targetUser.followers = targetUser.followers.filter(fid => String(fid) !== String(req.user._id));
-    
+
     await req.user.save();
     await targetUser.save();
-    
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
@@ -322,9 +322,9 @@ router.post('/posts/add', authRequired, (req, res, next) => {
     }
 
     const imagePaths = req.files.map(file => '/uploads/posts/' + file.filename);
-    
+
     // Process hashtags
-    const hashtags = req.body.hashtags ? 
+    const hashtags = req.body.hashtags ?
       (Array.isArray(req.body.hashtags) ? req.body.hashtags : [req.body.hashtags]) : [];
 
     const newPost = new Post({
@@ -341,4 +341,104 @@ router.post('/posts/add', authRequired, (req, res, next) => {
     res.status(500).json({ success: false, message: 'Error creating post.' });
   }
 });
+// Get single post with full data
+router.get('/api/posts/:postId', authRequired, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId)
+      .populate('user', 'username profileImage')
+      .populate('comments.user', 'username profileImage')
+      .lean();
+    
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    // Check if current user liked this post
+    const isLiked = post.likes.some(like => String(like) === String(req.user._id));
+    
+    res.json({ 
+      success: true, 
+      post: {
+        ...post,
+        isLiked,
+        likesCount: post.likes.length,
+        commentsCount: post.comments.length
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Toggle like on post
+router.post('/api/posts/:postId/like', authRequired, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const userLikeIndex = post.likes.indexOf(req.user._id);
+    let isLiked;
+
+    if (userLikeIndex > -1) {
+      // Unlike
+      post.likes.splice(userLikeIndex, 1);
+      isLiked = false;
+    } else {
+      // Like
+      post.likes.push(req.user._id);
+      isLiked = true;
+    }
+
+    await post.save();
+    res.json({ 
+      success: true, 
+      isLiked, 
+      likesCount: post.likes.length 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Add comment to post
+router.post('/api/posts/:postId/comment', authRequired, async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || !text.trim()) {
+      return res.status(400).json({ success: false, message: 'Comment text required' });
+    }
+
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const newComment = {
+      user: req.user._id,
+      text: text.trim(),
+      createdAt: new Date()
+    };
+
+    post.comments.push(newComment);
+    await post.save();
+
+    // Get the populated comment data
+    const populatedPost = await Post.findById(req.params.postId)
+      .populate('comments.user', 'username profileImage')
+      .lean();
+
+    const addedComment = populatedPost.comments[populatedPost.comments.length - 1];
+
+    res.json({ 
+      success: true, 
+      comment: addedComment,
+      commentsCount: post.comments.length 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 module.exports = router;

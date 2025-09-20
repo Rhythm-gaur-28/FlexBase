@@ -167,7 +167,8 @@
                         <% if (posts && posts.length> 0) { %>
                             <div class="collection-grid">
                                 <% posts.forEach(function(post, idx) { %>
-                                    <div class="collection-card" data-post-index="<%= idx %>">
+                                    <div class="collection-card post-card" data-post-id="<%= post._id %>"
+                                        data-post-index="<%= idx %>">
                                         <div class="collection-img-wrap">
                                             <img src="<%= post.images[0] %>" alt="Post image" />
                                             <% if (post.images.length> 1) { %>
@@ -185,7 +186,12 @@
                                                 + '...' : post.caption) : 'No caption' %>
                                         </div>
                                         <div class="collection-market-price">
-                                            <%= new Date(post.createdAt).toLocaleDateString() %>
+                                            <svg width="16" height="16" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path
+                                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                            </svg>
+                                            <%= post.likes ? post.likes.length : 0 %> likes
                                         </div>
                                     </div>
                                     <% }) %>
@@ -194,6 +200,7 @@
                                 <div class="profile-tab-placeholder">No posts yet. Share your first post!</div>
                                 <% } %>
                     </div>
+
 
 
                     <div class="profile-tab-pane" data-tab="collections">
@@ -257,6 +264,87 @@
                                 <div class="profile-tab-placeholder">No shoes in your collection yet.</div>
                                 <% } %>
                     </div>
+                    <!-- Post Modal (Add this after collection modal) -->
+                    <div id="postModal" class="post-modal">
+                        <div class="post-modal-content">
+                            <span id="closePostModalBtn" class="close-modal">&times;</span>
+
+                            <div class="post-modal-body">
+                                <!-- Left Side: Image Slider -->
+                                <div class="post-images-section">
+                                    <div class="post-modal-images">
+                                        <button class="post-arrow post-arrow-left">&#10094;</button>
+                                        <div class="post-modal-img-slider">
+                                            <!-- images injected by JS -->
+                                        </div>
+                                        <button class="post-arrow post-arrow-right">&#10095;</button>
+                                        <div class="post-slider-indicator"></div>
+                                        <div class="post-slider-counter"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Side: Post Details & Comments -->
+                                <div class="post-details-section">
+                                    <!-- User Info -->
+                                    <div class="post-user-info">
+                                        <img src="" alt="User" class="post-user-avatar">
+                                        <div class="post-user-details">
+                                            <span class="post-username"></span>
+                                            <span class="post-timestamp"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Caption -->
+                                    <div class="post-caption-section">
+                                        <p class="post-caption-text"></p>
+                                        <div class="post-hashtags"></div>
+                                    </div>
+
+                                    <!-- Post Actions -->
+                                    <div class="post-actions">
+                                        <button class="post-action-btn like-btn" id="likeBtn">
+                                            <svg width="24" height="24" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path
+                                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                            </svg>
+                                            <span class="likes-count">0</span>
+                                        </button>
+                                        <button class="post-action-btn comment-btn" id="commentToggle">
+                                            <svg width="24" height="24" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path
+                                                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" />
+                                            </svg>
+                                            <span class="comments-count">0</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Comments Section -->
+                                    <div class="comments-section" id="commentsSection">
+                                        <div class="comments-list" id="commentsList">
+                                            <!-- Comments will be loaded here -->
+                                        </div>
+
+                                        <!-- Add Comment Form -->
+                                        <div class="add-comment-form">
+                                            <div class="comment-input-container">
+                                                <textarea id="commentInput" placeholder="Write a comment..."
+                                                    rows="2"></textarea>
+                                                <button type="button" id="submitComment" class="submit-comment-btn">
+                                                    <svg width="20" height="20" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
                     <% if (isSelf) { %>
                         <div class="profile-tab-pane" data-tab="saved">
