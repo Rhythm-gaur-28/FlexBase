@@ -123,11 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ------ COLLECTIONS MODAL ------
-  const grid = document.querySelector('.collection-grid');
+  // ------ COLLECTIONS MODAL (FIXED) ------
+  const collectionsTab = document.querySelector('[data-tab="collections"]');
   const collectionModal = document.getElementById('collectionModal');
   
-  if (grid && collectionModal) {
+  if (collectionsTab && collectionModal) {
     const closeBtn = document.getElementById('closeModalBtn');
     const imgSlider = collectionModal.querySelector('.modal-img-slider');
     const sliderInd = collectionModal.querySelector('.slider-indicator');
@@ -141,57 +141,95 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentIdx = 0;
     let currentCollection = null;
 
-    // Grid click
-    grid.querySelectorAll('.collection-card').forEach(card => {
-      card.onclick = () => openModal(parseInt(card.getAttribute('data-index')));
+    // Target ONLY collection cards in the collections tab
+    const collectionsTabPane = document.querySelector('[data-tab="collections"]');
+    
+    // Add click listeners to collection cards (not post cards)
+    document.addEventListener('click', (e) => {
+      const clickedCard = e.target.closest('.collection-card');
+      
+      // Check if it's a collection card (has data-index, not data-post-id)
+      if (clickedCard && 
+          clickedCard.hasAttribute('data-index') && 
+          !clickedCard.hasAttribute('data-post-id') &&
+          collectionsTabPane.classList.contains('active')) {
+        
+        const index = parseInt(clickedCard.getAttribute('data-index'));
+        openCollectionModal(index);
+      }
     });
 
-    function openModal(idx) {
-      currentCollection = allCollections[idx];
-      currentIdx = 0;
-      collectionModal.classList.add('open');
-      updateModal();
+    function openCollectionModal(idx) {
+      // Use the global allCollections variable
+      if (typeof allCollections !== 'undefined' && allCollections[idx]) {
+        currentCollection = allCollections[idx];
+        currentIdx = 0;
+        collectionModal.classList.add('open');
+        updateCollectionModal();
+      } else {
+        console.log('Collection not found:', idx, typeof allCollections);
+      }
     }
 
-    function updateModal() {
+    function updateCollectionModal() {
+      if (!imgSlider) return;
       imgSlider.innerHTML = '';
       if (!currentCollection.images || !currentCollection.images.length) return;
+      
       currentCollection.images.forEach((src, i) => {
         const im = document.createElement('img');
         im.src = src;
         im.style.display = (i === currentIdx ? 'block' : 'none');
         imgSlider.appendChild(im);
       });
-      updateSliderNav();
-      updateMeta();
-      updateTimeline();
+      updateCollectionSliderNav();
+      updateCollectionMeta();
+      updateCollectionTimeline();
     }
 
-    function updateSliderNav() {
+    function updateCollectionSliderNav() {
+      if (!imgSlider || !sliderInd || !sliderCount) return;
+      
       const imgs = imgSlider.querySelectorAll('img');
       imgs.forEach((im, i) => im.style.display = (i === currentIdx ? 'block' : 'none'));
       sliderInd.innerHTML = '';
       imgs.forEach((_, i) => {
         const dot = document.createElement('span');
         dot.className = (i === currentIdx ? 'active' : '');
-        dot.onclick = () => { currentIdx = i; updateSliderNav(); };
+        dot.onclick = () => { currentIdx = i; updateCollectionSliderNav(); };
         sliderInd.appendChild(dot);
       });
       sliderCount.innerHTML = (currentIdx + 1) + '/' + imgs.length;
     }
 
-    if (leftArrow) leftArrow.onclick = () => { if (currentIdx > 0) { currentIdx--; updateSliderNav(); } };
-    if (rightArrow) rightArrow.onclick = () => { if (currentCollection && currentIdx < currentCollection.images.length - 1) { currentIdx++; updateSliderNav(); } };
-
-    function updateMeta() {
-      brandEl.textContent = currentCollection.brand || '';
-      priceEl.innerHTML = `Bought for: <b>$${currentCollection.boughtAtPrice}</b> &bull; Market: <b>$${currentCollection.marketPrice}</b>`;
-      const iso = currentCollection.boughtOn;
-      const date = iso ? (new Date(iso)).toLocaleDateString() : "";
-      dateEl.innerHTML = `Bought on <b>${date}</b>`;
+    if (leftArrow) {
+      leftArrow.onclick = () => { 
+        if (currentIdx > 0) { 
+          currentIdx--; 
+          updateCollectionSliderNav(); 
+        } 
+      };
+    }
+    
+    if (rightArrow) {
+      rightArrow.onclick = () => { 
+        if (currentCollection && currentIdx < currentCollection.images.length - 1) { 
+          currentIdx++; 
+          updateCollectionSliderNav(); 
+        } 
+      };
     }
 
-    function updateTimeline() {
+    function updateCollectionMeta() {
+      if (brandEl) brandEl.textContent = currentCollection.brand || '';
+      if (priceEl) priceEl.innerHTML = `Bought for: <b>$${currentCollection.boughtAtPrice}</b> &bull; Market: <b>$${currentCollection.marketPrice}</b>`;
+      const iso = currentCollection.boughtOn;
+      const date = iso ? (new Date(iso)).toLocaleDateString() : "";
+      if (dateEl) dateEl.innerHTML = `Bought on <b>${date}</b>`;
+    }
+
+    function updateCollectionTimeline() {
+      if (!timelineEl) return;
       timelineEl.innerHTML = '';
       const owners = currentCollection.previousOwners || [];
       if (!owners.length) { 
@@ -218,6 +256,285 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (closeBtn) closeBtn.onclick = () => { collectionModal.classList.remove('open'); };
+  }
+
+  // ------ POST MODAL ------
+  const postModal = document.getElementById('postModal');
+  
+  if (postModal) {
+    const closePostBtn = document.getElementById('closePostModalBtn');
+    const postImgSlider = postModal.querySelector('.post-modal-img-slider');
+    const postSliderInd = postModal.querySelector('.post-slider-indicator');
+    const postSliderCount = postModal.querySelector('.post-slider-counter');
+    const postLeftArrow = postModal.querySelector('.post-arrow-left');
+    const postRightArrow = postModal.querySelector('.post-arrow-right');
+    
+    // Post details elements
+    const postUserAvatar = postModal.querySelector('.post-user-avatar');
+    const postUsername = postModal.querySelector('.post-username');
+    const postTimestamp = postModal.querySelector('.post-timestamp');
+    const postCaptionText = postModal.querySelector('.post-caption-text');
+    const postHashtags = postModal.querySelector('.post-hashtags');
+    const likeBtn = postModal.querySelector('#likeBtn');
+    const likesCount = postModal.querySelector('.likes-count');
+    const commentToggle = postModal.querySelector('#commentToggle');
+    const commentsCount = postModal.querySelector('.comments-count');
+    const commentsList = postModal.querySelector('#commentsList');
+    const commentInput = postModal.querySelector('#commentInput');
+    const submitCommentBtn = postModal.querySelector('#submitComment');
+    
+    let currentPostIdx = 0;
+    let currentPostImageIdx = 0;
+    let currentPostData = null;
+
+    // Post card click handlers using event delegation
+    document.addEventListener('click', (e) => {
+      const clickedCard = e.target.closest('.post-card');
+      
+      if (clickedCard && clickedCard.hasAttribute('data-post-id')) {
+        const postId = clickedCard.getAttribute('data-post-id');
+        openPostModal(postId);
+      }
+    });
+
+    async function openPostModal(postId) {
+      try {
+        // Fetch post data
+        const response = await fetch(`/api/posts/${postId}`, {
+          credentials: 'include'
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          currentPostData = result.post;
+          currentPostImageIdx = 0;
+          postModal.classList.add('open');
+          updatePostModal();
+        }
+      } catch (error) {
+        console.error('Error loading post:', error);
+        toastMessage('Error loading post');
+      }
+    }
+
+    function updatePostModal() {
+      if (!currentPostData) return;
+      
+      // Update images
+      updatePostImages();
+      
+      // Update user info
+      if (postUserAvatar) postUserAvatar.src = currentPostData.user.profileImage || '/images/default-profile.jpg';
+      if (postUsername) postUsername.textContent = currentPostData.user.username;
+      if (postTimestamp) postTimestamp.textContent = new Date(currentPostData.createdAt).toLocaleDateString();
+      
+      // Update caption
+      if (postCaptionText) postCaptionText.textContent = currentPostData.caption || '';
+      
+      // Update hashtags
+      if (postHashtags) {
+        postHashtags.innerHTML = '';
+        if (currentPostData.hashtags && currentPostData.hashtags.length > 0) {
+          currentPostData.hashtags.forEach(tag => {
+            const hashtagEl = document.createElement('span');
+            hashtagEl.className = 'post-hashtag';
+            hashtagEl.textContent = '#' + tag;
+            postHashtags.appendChild(hashtagEl);
+          });
+        }
+      }
+      
+      // Update like button
+      if (likeBtn) {
+        likeBtn.classList.toggle('liked', currentPostData.isLiked);
+      }
+      if (likesCount) likesCount.textContent = currentPostData.likesCount || 0;
+      
+      // Update comments count
+      if (commentsCount) commentsCount.textContent = currentPostData.commentsCount || 0;
+      
+      // Load comments
+      loadComments();
+      
+      // Make username clickable
+      if (postUsername) {
+        postUsername.onclick = () => {
+          window.location.href = '/u/' + currentPostData.user.username;
+        };
+      }
+    }
+
+    function updatePostImages() {
+      if (!postImgSlider) return;
+      postImgSlider.innerHTML = '';
+      if (!currentPostData.images || !currentPostData.images.length) return;
+      
+      currentPostData.images.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.style.display = (i === currentPostImageIdx ? 'block' : 'none');
+        postImgSlider.appendChild(img);
+      });
+      
+      updatePostSliderNav();
+    }
+
+    function updatePostSliderNav() {
+      if (!postImgSlider) return;
+      const imgs = postImgSlider.querySelectorAll('img');
+      imgs.forEach((img, i) => img.style.display = (i === currentPostImageIdx ? 'block' : 'none'));
+      
+      // Update indicators
+      if (postSliderInd) {
+        postSliderInd.innerHTML = '';
+        imgs.forEach((_, i) => {
+          const dot = document.createElement('span');
+          dot.className = (i === currentPostImageIdx ? 'active' : '');
+          dot.onclick = () => { 
+            currentPostImageIdx = i; 
+            updatePostSliderNav(); 
+          };
+          postSliderInd.appendChild(dot);
+        });
+      }
+      
+      // Update counter
+      if (postSliderCount) postSliderCount.textContent = `${currentPostImageIdx + 1}/${imgs.length}`;
+      
+      // Show/hide arrows
+      if (postLeftArrow) postLeftArrow.style.display = imgs.length > 1 ? 'flex' : 'none';
+      if (postRightArrow) postRightArrow.style.display = imgs.length > 1 ? 'flex' : 'none';
+      if (postSliderInd) postSliderInd.style.display = imgs.length > 1 ? 'block' : 'none';
+    }
+
+    // Arrow navigation
+    if (postLeftArrow) {
+      postLeftArrow.onclick = () => {
+        if (currentPostImageIdx > 0) {
+          currentPostImageIdx--;
+          updatePostSliderNav();
+        }
+      };
+    }
+
+    if (postRightArrow) {
+      postRightArrow.onclick = () => {
+        if (currentPostData && currentPostImageIdx < currentPostData.images.length - 1) {
+          currentPostImageIdx++;
+          updatePostSliderNav();
+        }
+      };
+    }
+
+    // Like button functionality
+    if (likeBtn) {
+      likeBtn.addEventListener('click', async () => {
+        if (!currentPostData) return;
+        
+        try {
+          const response = await fetch(`/api/posts/${currentPostData._id}/like`, {
+            method: 'POST',
+            credentials: 'include'
+          });
+          const result = await response.json();
+          
+          if (result.success) {
+            currentPostData.isLiked = result.isLiked;
+            currentPostData.likesCount = result.likesCount;
+            likeBtn.classList.toggle('liked', result.isLiked);
+            if (likesCount) likesCount.textContent = result.likesCount;
+          }
+        } catch (error) {
+          console.error('Error toggling like:', error);
+        }
+      });
+    }
+
+    // Submit comment
+    if (submitCommentBtn) {
+      submitCommentBtn.addEventListener('click', async () => {
+        const text = commentInput ? commentInput.value.trim() : '';
+        if (!text || !currentPostData) return;
+        
+        try {
+          submitCommentBtn.disabled = true;
+          const response = await fetch(`/api/posts/${currentPostData._id}/comment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ text })
+          });
+          const result = await response.json();
+          
+          if (result.success) {
+            currentPostData.comments = currentPostData.comments || [];
+            currentPostData.comments.push(result.comment);
+            currentPostData.commentsCount = result.commentsCount;
+            if (commentsCount) commentsCount.textContent = result.commentsCount;
+            if (commentInput) commentInput.value = '';
+            loadComments();
+          }
+        } catch (error) {
+          console.error('Error adding comment:', error);
+        } finally {
+          submitCommentBtn.disabled = false;
+        }
+      });
+    }
+
+    // Enter key to submit comment
+    if (commentInput) {
+      commentInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (submitCommentBtn) submitCommentBtn.click();
+        }
+      });
+    }
+
+    function loadComments() {
+      if (!commentsList || !currentPostData.comments) return;
+      
+      commentsList.innerHTML = '';
+      currentPostData.comments.forEach(comment => {
+        const commentEl = document.createElement('div');
+        commentEl.className = 'comment-item';
+        
+        const timeAgo = getTimeAgo(new Date(comment.createdAt));
+        
+        commentEl.innerHTML = `
+          <img src="${comment.user.profileImage || '/images/default-profile.jpg'}" alt="${comment.user.username}" class="comment-avatar">
+          <div class="comment-content">
+            <div class="comment-username" onclick="window.location.href='/u/${comment.user.username}'">${comment.user.username}</div>
+            <div class="comment-text">${comment.text}</div>
+            <div class="comment-timestamp">${timeAgo}</div>
+          </div>
+        `;
+        
+        commentsList.appendChild(commentEl);
+      });
+      
+      // Scroll to bottom
+      commentsList.scrollTop = commentsList.scrollHeight;
+    }
+
+    function getTimeAgo(date) {
+      const now = new Date();
+      const diffInSeconds = Math.floor((now - date) / 1000);
+      
+      if (diffInSeconds < 60) return 'Just now';
+      if (diffInSeconds < 3600) return Math.floor(diffInSeconds / 60) + 'm ago';
+      if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + 'h ago';
+      if (diffInSeconds < 604800) return Math.floor(diffInSeconds / 86400) + 'd ago';
+      return date.toLocaleDateString();
+    }
+
+    // Close modal
+    if (closePostBtn) {
+      closePostBtn.onclick = () => {
+        postModal.classList.remove('open');
+      };
+    }
   }
 
   // ------ FOLLOW FUNCTIONALITY (only for other profiles) ------
@@ -353,273 +670,6 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/u/' + encodeURIComponent(usernameText);
     });
   });
-// Add this to your existing profile.js after the collections modal code
-
-// ------ POST MODAL ------
-const postModal = document.getElementById('postModal');
-const postCards = document.querySelectorAll('.post-card');
-
-if (postModal && postCards.length > 0) {
-  const closePostBtn = document.getElementById('closePostModalBtn');
-  const postImgSlider = postModal.querySelector('.post-modal-img-slider');
-  const postSliderInd = postModal.querySelector('.post-slider-indicator');
-  const postSliderCount = postModal.querySelector('.post-slider-counter');
-  const postLeftArrow = postModal.querySelector('.post-arrow-left');
-  const postRightArrow = postModal.querySelector('.post-arrow-right');
-  
-  // Post details elements
-  const postUserAvatar = postModal.querySelector('.post-user-avatar');
-  const postUsername = postModal.querySelector('.post-username');
-  const postTimestamp = postModal.querySelector('.post-timestamp');
-  const postCaptionText = postModal.querySelector('.post-caption-text');
-  const postHashtags = postModal.querySelector('.post-hashtags');
-  const likeBtn = postModal.querySelector('#likeBtn');
-  const likesCount = postModal.querySelector('.likes-count');
-  const commentToggle = postModal.querySelector('#commentToggle');
-  const commentsCount = postModal.querySelector('.comments-count');
-  const commentsList = postModal.querySelector('#commentsList');
-  const commentInput = postModal.querySelector('#commentInput');
-  const submitCommentBtn = postModal.querySelector('#submitComment');
-  
-  let currentPostIdx = 0;
-  let currentPostImageIdx = 0;
-  let currentPostData = null;
-
-  // Post card click handlers
-  postCards.forEach(card => {
-    card.addEventListener('click', async () => {
-      const postId = card.getAttribute('data-post-id');
-      await openPostModal(postId);
-    });
-  });
-
-  async function openPostModal(postId) {
-    try {
-      // Fetch post data
-      const response = await fetch(`/api/posts/${postId}`, {
-        credentials: 'include'
-      });
-      const result = await response.json();
-      
-      if (result.success) {
-        currentPostData = result.post;
-        currentPostImageIdx = 0;
-        postModal.classList.add('open');
-        updatePostModal();
-      }
-    } catch (error) {
-      console.error('Error loading post:', error);
-    }
-  }
-
-  function updatePostModal() {
-    if (!currentPostData) return;
-    
-    // Update images
-    updatePostImages();
-    
-    // Update user info
-    postUserAvatar.src = currentPostData.user.profileImage || '/images/default-profile.jpg';
-    postUsername.textContent = currentPostData.user.username;
-    postTimestamp.textContent = new Date(currentPostData.createdAt).toLocaleDateString();
-    
-    // Update caption
-    postCaptionText.textContent = currentPostData.caption || '';
-    
-    // Update hashtags
-    postHashtags.innerHTML = '';
-    if (currentPostData.hashtags && currentPostData.hashtags.length > 0) {
-      currentPostData.hashtags.forEach(tag => {
-        const hashtagEl = document.createElement('span');
-        hashtagEl.className = 'post-hashtag';
-        hashtagEl.textContent = '#' + tag;
-        postHashtags.appendChild(hashtagEl);
-      });
-    }
-    
-    // Update like button
-    likeBtn.classList.toggle('liked', currentPostData.isLiked);
-    likesCount.textContent = currentPostData.likesCount || 0;
-    
-    // Update comments count
-    commentsCount.textContent = currentPostData.commentsCount || 0;
-    
-    // Load comments
-    loadComments();
-    
-    // Make username clickable
-    postUsername.onclick = () => {
-      window.location.href = '/u/' + currentPostData.user.username;
-    };
-  }
-
-  function updatePostImages() {
-    postImgSlider.innerHTML = '';
-    if (!currentPostData.images || !currentPostData.images.length) return;
-    
-    currentPostData.images.forEach((src, i) => {
-      const img = document.createElement('img');
-      img.src = src;
-      img.style.display = (i === currentPostImageIdx ? 'block' : 'none');
-      postImgSlider.appendChild(img);
-    });
-    
-    updatePostSliderNav();
-  }
-
-  function updatePostSliderNav() {
-    const imgs = postImgSlider.querySelectorAll('img');
-    imgs.forEach((img, i) => img.style.display = (i === currentPostImageIdx ? 'block' : 'none'));
-    
-    // Update indicators
-    postSliderInd.innerHTML = '';
-    imgs.forEach((_, i) => {
-      const dot = document.createElement('span');
-      dot.className = (i === currentPostImageIdx ? 'active' : '');
-      dot.onclick = () => { 
-        currentPostImageIdx = i; 
-        updatePostSliderNav(); 
-      };
-      postSliderInd.appendChild(dot);
-    });
-    
-    // Update counter
-    postSliderCount.textContent = `${currentPostImageIdx + 1}/${imgs.length}`;
-    
-    // Show/hide arrows
-    postLeftArrow.style.display = imgs.length > 1 ? 'flex' : 'none';
-    postRightArrow.style.display = imgs.length > 1 ? 'flex' : 'none';
-    postSliderInd.style.display = imgs.length > 1 ? 'block' : 'none';
-  }
-
-  // Arrow navigation
-  if (postLeftArrow) {
-    postLeftArrow.onclick = () => {
-      if (currentPostImageIdx > 0) {
-        currentPostImageIdx--;
-        updatePostSliderNav();
-      }
-    };
-  }
-
-  if (postRightArrow) {
-    postRightArrow.onclick = () => {
-      if (currentPostData && currentPostImageIdx < currentPostData.images.length - 1) {
-        currentPostImageIdx++;
-        updatePostSliderNav();
-      }
-    };
-  }
-
-  // Like button functionality
-  if (likeBtn) {
-    likeBtn.addEventListener('click', async () => {
-      if (!currentPostData) return;
-      
-      try {
-        const response = await fetch(`/api/posts/${currentPostData._id}/like`, {
-          method: 'POST',
-          credentials: 'include'
-        });
-        const result = await response.json();
-        
-        if (result.success) {
-          currentPostData.isLiked = result.isLiked;
-          currentPostData.likesCount = result.likesCount;
-          likeBtn.classList.toggle('liked', result.isLiked);
-          likesCount.textContent = result.likesCount;
-        }
-      } catch (error) {
-        console.error('Error toggling like:', error);
-      }
-    });
-  }
-
-  // Submit comment
-  if (submitCommentBtn) {
-    submitCommentBtn.addEventListener('click', async () => {
-      const text = commentInput.value.trim();
-      if (!text || !currentPostData) return;
-      
-      try {
-        submitCommentBtn.disabled = true;
-        const response = await fetch(`/api/posts/${currentPostData._id}/comment`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ text })
-        });
-        const result = await response.json();
-        
-        if (result.success) {
-          currentPostData.comments.push(result.comment);
-          currentPostData.commentsCount = result.commentsCount;
-          commentsCount.textContent = result.commentsCount;
-          commentInput.value = '';
-          loadComments();
-        }
-      } catch (error) {
-        console.error('Error adding comment:', error);
-      } finally {
-        submitCommentBtn.disabled = false;
-      }
-    });
-  }
-
-  // Enter key to submit comment
-  if (commentInput) {
-    commentInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        submitCommentBtn.click();
-      }
-    });
-  }
-
-  function loadComments() {
-    if (!currentPostData.comments) return;
-    
-    commentsList.innerHTML = '';
-    currentPostData.comments.forEach(comment => {
-      const commentEl = document.createElement('div');
-      commentEl.className = 'comment-item';
-      
-      const timeAgo = getTimeAgo(new Date(comment.createdAt));
-      
-      commentEl.innerHTML = `
-        <img src="${comment.user.profileImage || '/images/default-profile.jpg'}" alt="${comment.user.username}" class="comment-avatar">
-        <div class="comment-content">
-          <div class="comment-username" onclick="window.location.href='/u/${comment.user.username}'">${comment.user.username}</div>
-          <div class="comment-text">${comment.text}</div>
-          <div class="comment-timestamp">${timeAgo}</div>
-        </div>
-      `;
-      
-      commentsList.appendChild(commentEl);
-    });
-    
-    // Scroll to bottom
-    commentsList.scrollTop = commentsList.scrollHeight;
-  }
-
-  function getTimeAgo(date) {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-    
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return Math.floor(diffInSeconds / 60) + 'm ago';
-    if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + 'h ago';
-    if (diffInSeconds < 604800) return Math.floor(diffInSeconds / 86400) + 'd ago';
-    return date.toLocaleDateString();
-  }
-
-  // Close modal
-  if (closePostBtn) {
-    closePostBtn.onclick = () => {
-      postModal.classList.remove('open');
-    };
-  }
-}
 
   // Toast message helper
   function toastMessage(message) {
