@@ -11,7 +11,19 @@ const Post = require('../models/Post');
 const authRequired = require('../middleware/authRequired');
 const authController = require('../controllers/authController');
 
+// Import chat routes
+const chatRoutes = require('./chat');
 
+// Mount chat routes under /api/chat
+router.use('/api/chat', chatRoutes);
+
+// Chat page route
+router.get('/chat', authRequired, async (req, res) => {
+    res.render('chat', {
+        title: 'Chat | FlexBase',
+        user: req.user
+    });
+});
 // ---------- Multer Storage Setup ----------
 const profileStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'public/uploads/profiles/'),
