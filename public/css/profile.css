@@ -474,6 +474,56 @@ input[type="file"]#profilePicture {
   background: #f96c2b;
   color: #fff;
 }
+/* Delete Comment Confirmation Modal */
+#confirmDeleteComment .modal-content p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #2d3748;
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+#confirmDeleteComment .btn-danger {
+  background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 10px;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+#confirmDeleteComment .btn-danger:hover {
+  background: linear-gradient(135deg, #c53030 0%, #9c2626 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(197, 48, 48, 0.3);
+}
+
+#confirmDeleteComment .btn {
+  background: #f7fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+#confirmDeleteComment .btn:hover {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+/* Ensure delete modal appears above post modal */
+#confirmDeleteComment {
+  z-index: 20001;
+}
 
 /* Responsive adjustments */
 @media (max-width:590px) {
@@ -511,29 +561,39 @@ input[type="file"]#profilePicture {
   }
 }
 
-/* Toast styles */
+/* Toast styles - Updated with higher z-index */
 .toast {
   position: fixed;
   bottom: 30px;
   left: 50%;
-  transform: translateX(-50%) translateY(100%);
-  background: #000000;
+  transform: translateX(-50%) translateY(100px);
+  background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
   color: white;
-  padding: 14px 28px;
-  /* border-radius: 32px; */
+  padding: 1rem 2rem;
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 1.2rem;
-  letter-spacing: 0.3px;
-  pointer-events: none;
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  font-size: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   opacity: 0;
-  z-index: 10000;
-  font-family: 'Cormorant Garamond', serif;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 20000; /* Higher than modal z-index */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: none;
 }
 
 .toast.show {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
+  pointer-events: auto;
+}
+
+.toast.success {
+  background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+}
+
+.toast.error {
+  background: linear-gradient(135deg, #e53e3e 0%, #f56565 100%);
 }
 
 .collection-tab-pane {
@@ -1025,7 +1085,7 @@ input[type="file"]#profilePicture {
   top: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.2);
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(5px);
@@ -1067,7 +1127,7 @@ input[type="file"]#profilePicture {
 /* Left Side - Images */
 .post-images-section {
   flex: 1.2;
-  background: #000;
+  background: #ffffff;
   position: relative;
   display: flex;
   align-items: center;
@@ -1209,7 +1269,7 @@ input[type="file"]#profilePicture {
 }
 
 .post-username:hover {
-  color: #3b82f6;
+  color: #f96c2b;
 }
 
 .post-timestamp {
@@ -1228,7 +1288,7 @@ input[type="file"]#profilePicture {
   line-height: 1.5;
   margin: 0 0 10px 0;
   font-family: 'Cormorant Garamond', serif;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .post-hashtags {
@@ -1422,6 +1482,62 @@ input[type="file"]#profilePicture {
 
 .post-modal .close-modal:hover {
   background: rgba(0, 0, 0, 0.8);
+}
+/* Comment Delete Button Styles */
+.comment-item {
+  position: relative;
+  display: flex;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.delete-comment-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(220, 38, 38, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  color: #dc2626;
+}
+
+.comment-item:hover .delete-comment-btn {
+  display: flex;
+}
+
+.delete-comment-btn:hover {
+  background: rgba(220, 38, 38, 0.2);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.delete-comment-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* Ensure comment content has enough space */
+.comment-content {
+  flex: 1;
+  padding-right: 40px; /* Space for delete button */
+}
+
+/* Enhanced comment item layout */
+.comment-item {
+  border-radius: 8px;
+  padding: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.comment-item:hover {
+  background: rgba(0, 0, 0, 0.02);
 }
 
 /* Responsive Design */

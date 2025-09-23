@@ -80,10 +80,10 @@
                         </form>
                         <% } %>
 
-                            <!-- Edit Profile Button - appears only for own profile -->
-                            <% if (isSelf) { %>
-                                <button class="edit-profile-btn">Edit Profile</button>
-                                <% } %>
+                        <!-- Edit Profile Button - appears only for own profile -->
+                        <% if (isSelf) { %>
+                            <button class="edit-profile-btn">Edit Profile</button>
+                            <% } %>
                 </aside>
 
                 <!-- Main Content Area -->
@@ -390,19 +390,55 @@
                 </div>
                 <% } %>
 
-                    <!-- Notification Toast -->
-                    <div id="toast" class="toast"></div>
+                <!-- Delete Comment Confirmation Dialog -->
+                <div id="confirmDeleteComment" class="modal">
+                    <div class="modal-content">
+                        <p>Are you sure you want to delete this comment?</p>
+                        <button id="confirmDeleteYes" class="btn btn-danger">Delete</button>
+                        <button id="confirmDeleteNo" class="btn">Cancel</button>
+                    </div>
+                </div>
 
-                    <!-- FIXED SCRIPT TAGS -->
-                    <script>
-                        // Pass all collections as a JS variable (FIXED: removed space in EJS tag)
-                        const allCollections = <%- JSON.stringify(collections) %>;
-                        // Pass all posts as a JS variable
-                        const allPosts = <%- JSON.stringify(posts) %>;
-                        // expose viewingSelf to JS if needed (FIXED: removed space in EJS tag)
+                <!-- Notification Toast -->
+                <div id="toast" class="toast"></div>
+
+                <!-- FIXED SCRIPT TAGS -->
+                <script>
+                    // Check if collections exist and handle potential JSON issues
+                    let allCollections = [];
+                    let allPosts = [];
+                    
+                    try {
+                        <% if (typeof collections !== 'undefined' && collections) { %>
+                            allCollections = <%- JSON.stringify(collections) %>;
+                        <% } %>
+                        
+                        <% if (typeof posts !== 'undefined' && posts) { %>
+                            allPosts = <%- JSON.stringify(posts) %>;
+                        <% } %>
+                        
                         window.viewingSelf = <%- JSON.stringify(isSelf) %>;
-                    </script>
-                    <script src="/js/profile.js"></script>
+                        
+                        // Add the logged-in user info
+                        window.loggedInUser = {
+                            username: '<%= user.username %>',
+                            profileImage: '<%= user.profileImage || "/images/default-profile.jpg" %>'
+                        };
+                        
+                        // Debug logs
+                        console.log('Collections loaded:', allCollections.length);
+                        console.log('Posts loaded:', allPosts.length);
+                        console.log('Viewing self:', window.viewingSelf);
+                        console.log('Logged in user:', window.loggedInUser);
+                        
+                    } catch (error) {
+                        console.error('Error parsing data:', error);
+                        allCollections = [];
+                        allPosts = [];
+                        window.viewingSelf = false;
+                    }
+                </script>
+                <script src="/js/profile.js"></script>
 </body>
 
 </html>

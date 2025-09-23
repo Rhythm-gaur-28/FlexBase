@@ -440,5 +440,43 @@ router.post('/api/posts/:postId/comment', authRequired, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+// Delete comment from post (Updated with Instagram-like logic)
+router.delete('/api/posts/:postId/comment/:commentId', authRequired, async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    
+    const post = await Post.findById(postId).populate('user', 'username');
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    // Find the comment
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ success: false, message: 'Comment not found' });
+    }
+
+    // Instagram-like logic: Allow deletion if user owns comment OR owns the post
+    const isCommentOwner = String(comment.user) === String(req.user._id);
+    const isPostOwner = String(post.user._id) === String(req.user._id);
+    
+    if (!isCommentOwner && !isPostOwner) {
+      return res.status(403).json({ success: false, message: 'Not authorized to delete this comment' });
+    }
+
+    // Remove the comment
+    post.comments.pull(commentId);
+    await post.save();
+
+    res.json({ 
+      success: true, 
+      commentsCount: post.comments.length 
+    });
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 
 module.exports = router;
