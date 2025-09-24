@@ -35,7 +35,6 @@ let UserStatus;
 try {
   UserStatus = require('./models/UserStatus');
 } catch (error) {
-  console.log('UserStatus model not found, creating a simple in-memory version');
   // Simple in-memory user status for now
   UserStatus = {
     findOneAndUpdate: () => Promise.resolve(),
@@ -102,8 +101,6 @@ io.use(async (socket, next) => {
 
 // Socket.IO Connection Handler
 io.on('connection', async (socket) => {
-  console.log(`🔗 User ${socket.username} connected (${socket.userId})`);
-  
   try {
     // Join user to their personal room
     socket.join(`user_${socket.userId}`);
@@ -144,7 +141,6 @@ io.on('connection', async (socket) => {
     socket.on('joinChat', (chatId) => {
       if (chatId) {
         socket.join(`chat_${chatId}`);
-        console.log(`📱 User ${socket.username} joined chat ${chatId}`);
       }
     });
 
@@ -152,7 +148,6 @@ io.on('connection', async (socket) => {
     socket.on('leaveChat', (chatId) => {
       if (chatId) {
         socket.leave(`chat_${chatId}`);
-        console.log(`📱 User ${socket.username} left chat ${chatId}`);
       }
     });
 
@@ -173,8 +168,6 @@ io.on('connection', async (socket) => {
 
     // Handle disconnect
     socket.on('disconnect', async () => {
-      console.log(`❌ User ${socket.username} disconnected`);
-      
       try {
         if (UserStatus && typeof UserStatus.findOneAndUpdate === 'function') {
           await UserStatus.findOneAndUpdate(
@@ -228,46 +221,4 @@ const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
   console.log(`🚀 FlexBase server running on http://localhost:${PORT}`);
   console.log(`🔌 Socket.IO server ready for connections`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('🔄 SIGTERM received, shutting down gracefully');
-  
-  // Update all online users to offline
-  try {
-    if (UserStatus && typeof UserStatus.updateMany === 'function') {
-      await UserStatus.updateMany(
-        { isOnline: true },
-        { isOnline: false, lastSeen: new Date(), socketId: null }
-      );
-    }
-  } catch (error) {
-    console.error('Error during graceful shutdown:', error);
-  }
-  
-  server.close(() => {
-    console.log('✅ Server closed');
-    process.exit(0);
-  });
-});
-
-process.on('SIGINT', async () => {
-  console.log('🔄 SIGINT received, shutting down gracefully');
-  
-  try {
-    if (UserStatus && typeof UserStatus.updateMany === 'function') {
-      await UserStatus.updateMany(
-        { isOnline: true },
-        { isOnline: false, lastSeen: new Date(), socketId: null }
-      );
-    }
-  } catch (error) {
-    console.error('Error during graceful shutdown:', error);
-  }
-  
-  server.close(() => {
-    console.log('✅ Server closed');
-    process.exit(0);
-  });
 });

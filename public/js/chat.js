@@ -9,7 +9,7 @@ class FlexBaseChat {
         this.communityChat = null;
         this.messagesSent = new Set(); // Track sent messages to prevent duplicates
         this.lastMessageId = null; // Track last message to prevent duplicates
-        
+
         this.initializeElements();
         this.initializeSocket();
         this.bindEvents();
@@ -20,31 +20,31 @@ class FlexBaseChat {
         // Search elements
         this.userSearchInput = document.getElementById('userSearch');
         this.searchResults = document.getElementById('searchResults');
-        
+
         // Chat list elements
         this.chatsList = document.getElementById('chatsList');
         this.communityChatElement = document.getElementById('communityChat');
         this.memberCount = document.getElementById('memberCount');
-        
+
         // Chat area elements
         this.welcomeScreen = document.getElementById('welcomeScreen');
         this.activeChat = document.getElementById('activeChat');
         this.activeChatAvatar = document.getElementById('activeChatAvatar');
         this.activeChatName = document.getElementById('activeChatName');
         this.activeChatStatus = document.getElementById('activeChatStatus');
-        
+
         // Messages elements
         this.messagesContainer = document.getElementById('messagesContainer');
         this.messagesList = document.getElementById('messagesList');
         this.typingIndicator = document.getElementById('typingIndicator');
         this.typingAvatar = document.getElementById('typingAvatar');
         this.typingUsername = document.getElementById('typingUsername');
-        
+
         // Input elements
         this.messageInput = document.getElementById('messageInput');
         this.sendButton = document.getElementById('sendButton');
         this.attachButton = document.getElementById('attachButton');
-        
+
         // Three dots menu
         this.chatOptions = document.getElementById('chatOptions');
         this.setupChatOptionsMenu();
@@ -68,7 +68,7 @@ class FlexBaseChat {
     toggleChatOptionsMenu() {
         // Create dropdown if it doesn't exist
         let dropdown = document.getElementById('chatOptionsDropdown');
-        
+
         if (!dropdown) {
             dropdown = document.createElement('div');
             dropdown.id = 'chatOptionsDropdown';
@@ -93,17 +93,17 @@ class FlexBaseChat {
                     Report
                 </div>
             `;
-            
+
             // Position dropdown relative to button
             const rect = this.chatOptions.getBoundingClientRect();
             dropdown.style.position = 'absolute';
             dropdown.style.top = (rect.bottom + 5) + 'px';
             dropdown.style.right = '20px';
             dropdown.style.zIndex = '1000';
-            
+
             document.body.appendChild(dropdown);
         }
-        
+
         dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
     }
 
@@ -122,13 +122,112 @@ class FlexBaseChat {
         alert('Mute functionality - Coming soon!');
     }
 
-    clearChat() {
-        if (confirm('Are you sure you want to clear this chat? This action cannot be undone.')) {
-            this.messagesList.innerHTML = '';
-            console.log('Chat cleared');
+    async clearChat() {
+        if (!this.currentChatId) {
+            alert('No chat selected to clear.');
+            this.closeChatOptionsMenu();
+            return;
         }
+
+        const chatName = this.currentChatType === 'community' ? 'FlexBase Community' : this.activeChatName.textContent;
+
+        if (confirm(`Are you sure you want to clear "${chatName}" chat? This action cannot be undone and will delete all messages permanently.`)) {
+            try {
+                // Show loading state
+                const originalContent = this.messagesList.innerHTML;
+                this.messagesList.innerHTML = `
+                <div class="clearing-chat-state">
+                    <div class="loading-spinner"></div>
+                    <p>Clearing chat messages...</p>
+                </div>
+            `;
+
+                const response = await fetch(`/api/chat/chats/${this.currentChatId}/clear`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Clear messages from UI permanently
+                    this.messagesList.innerHTML = `
+                    <div class="chat-cleared-message">
+                        <div class="cleared-icon">🧹</div>
+                        <p><strong>Chat cleared successfully!</strong></p>
+                        <p class="cleared-subtitle">All messages have been permanently deleted.</p>
+                    </div>
+                `;
+
+                    // Update chat in sidebar to show no last message
+                    this.updateChatLastMessage(this.currentChatId, {
+                        content: 'Chat cleared',
+                        sender: { _id: window.currentUser.id },
+                        createdAt: new Date()
+                    });
+
+                    // Show success message in console (this will now appear)
+                    console.log(`✅ Chat "${chatName}" cleared successfully`);
+
+                    // Show user-friendly notification
+                    this.showNotification('Chat cleared successfully!', 'success');
+
+                    // Emit to other users that chat was cleared
+                    if (this.socket) {
+                        this.socket.emit('chatCleared', {
+                            chatId: this.currentChatId,
+                            chatType: this.currentChatType
+                        });
+                    }
+
+                } else {
+                    // Restore original content on failure
+                    this.messagesList.innerHTML = originalContent;
+                    console.error('❌ Failed to clear chat:', data.message);
+                    this.showNotification(data.message || 'Failed to clear chat. Please try again.', 'error');
+                }
+
+            } catch (error) {
+                console.error('❌ Error clearing chat:', error);
+                // Restore original content on error
+                this.loadMessages(this.currentChatId);
+                this.showNotification('Error clearing chat. Please check your connection and try again.', 'error');
+            }
+        }
+
         this.closeChatOptionsMenu();
     }
+
+    // Helper method to show notifications
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `chat-notification ${type}`;
+        notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">
+                ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+            </span>
+            <span class="notification-message">${message}</span>
+        </div>
+    `;
+
+        // Add to DOM
+        document.body.appendChild(notification);
+
+        // Show notification
+        setTimeout(() => notification.classList.add('show'), 100);
+
+        // Hide and remove notification after 4 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => document.body.removeChild(notification), 300);
+        }, 4000);
+    }
+
 
     reportChat() {
         console.log('Report chat functionality');
@@ -154,9 +253,31 @@ class FlexBaseChat {
             if (data.senderId !== window.currentUser.id && data.chatId === this.currentChatId) {
                 this.handleNewMessage(data);
             }
-            
+
             // Always update chat in sidebar
             this.updateChatLastMessage(data.chatId, data.message);
+        });
+
+        // FIXED: Move chatCleared listener outside of newMessage
+        this.socket.on('chatCleared', (data) => {
+            if (data.chatId === this.currentChatId) {
+                this.messagesList.innerHTML = `
+                <div class="chat-cleared-message">
+                    <div class="cleared-icon">🧹</div>
+                    <p><strong>Chat cleared by @${data.clearedBy.username}</strong></p>
+                    <p class="cleared-subtitle">All messages have been removed from this chat.</p>
+                </div>
+            `;
+
+                this.showNotification(`Chat cleared by @${data.clearedBy.username}`, 'info');
+            }
+
+            // Update chat in sidebar
+            this.updateChatLastMessage(data.chatId, {
+                content: 'Chat cleared',
+                sender: data.clearedBy,
+                createdAt: new Date()
+            });
         });
 
         this.socket.on('userTyping', (data) => {
@@ -167,6 +288,7 @@ class FlexBaseChat {
             console.log('Disconnected from server');
         });
     }
+
 
     // Get token from cookies
     getCookie(name) {
@@ -235,7 +357,7 @@ class FlexBaseChat {
 
     renderChats() {
         this.chatsList.innerHTML = '';
-        
+
         this.chats.forEach(chat => {
             const chatElement = this.createChatElement(chat);
             this.chatsList.appendChild(chatElement);
@@ -245,15 +367,15 @@ class FlexBaseChat {
     createChatElement(chat) {
         const otherUser = chat.participants.find(p => p._id !== window.currentUser.id);
         const lastMessage = chat.lastMessage;
-        
+
         const chatElement = document.createElement('div');
         chatElement.className = 'chat-item';
         chatElement.dataset.chatId = chat._id;
         chatElement.dataset.chatType = 'private';
 
         const timeAgo = lastMessage ? this.formatTimeAgo(new Date(lastMessage.createdAt)) : '';
-        const messagePreview = lastMessage ? 
-            (lastMessage.sender._id === window.currentUser.id ? 'You: ' : '') + lastMessage.content : 
+        const messagePreview = lastMessage ?
+            (lastMessage.sender._id === window.currentUser.id ? 'You: ' : '') + lastMessage.content :
             'Start a conversation...';
 
         chatElement.innerHTML = `
@@ -285,8 +407,8 @@ class FlexBaseChat {
         });
 
         // Add active class to selected chat
-        const selectedChatElement = document.querySelector(`[data-chat-id="${chatId}"]`) || 
-                                   (type === 'community' ? this.communityChatElement : null);
+        const selectedChatElement = document.querySelector(`[data-chat-id="${chatId}"]`) ||
+            (type === 'community' ? this.communityChatElement : null);
         if (selectedChatElement) {
             selectedChatElement.classList.add('active');
         }
@@ -310,7 +432,7 @@ class FlexBaseChat {
 
         // Update chat header
         if (type === 'community') {
-            this.activeChatAvatar.src = '/images/community-icon.png';
+            this.activeChatAvatar.src = '/images/tilted-sneaker.png';
             this.activeChatName.textContent = 'FlexBase Community';
             this.activeChatStatus.textContent = `${this.memberCount.textContent} members`;
         } else {
@@ -328,17 +450,17 @@ class FlexBaseChat {
 
     async selectCommunityChat() {
         if (!this.communityChat) return;
-        
+
         // Remove active from all chats
         document.querySelectorAll('.chat-item').forEach(item => {
             item.classList.remove('active');
         });
-        
+
         // Add active to community chat
         if (this.communityChatElement) {
             this.communityChatElement.classList.add('active');
         }
-        
+
         await this.selectChat(this.communityChat._id, 'community');
     }
 
@@ -360,7 +482,7 @@ class FlexBaseChat {
 
     renderMessages(messages) {
         this.messagesList.innerHTML = '';
-        
+
         messages.forEach(message => {
             const messageElement = this.createMessageElement(message);
             this.messagesList.appendChild(messageElement);
@@ -372,7 +494,7 @@ class FlexBaseChat {
         const messageElement = document.createElement('div');
         messageElement.className = `message ${isOwn ? 'own' : ''}`;
         messageElement.setAttribute('data-message-id', message._id);
-        
+
         // Add temp ID for temporary messages
         if (message.isTemporary) {
             messageElement.setAttribute('data-temp-id', message._id);
@@ -400,11 +522,11 @@ class FlexBaseChat {
         // Prevent double submission
         if (this.sendButton.disabled) return;
         this.sendButton.disabled = true;
-        
+
         try {
             // Create temporary message ID to prevent duplicates
             const tempId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            
+
             // Add message to UI immediately (optimistic update)
             const tempMessage = {
                 _id: tempId,
@@ -417,12 +539,12 @@ class FlexBaseChat {
                 createdAt: new Date(),
                 isTemporary: true
             };
-            
+
             // Add to UI immediately
             const messageElement = this.createMessageElement(tempMessage);
             this.messagesList.appendChild(messageElement);
             this.scrollToBottom();
-            
+
             // Clear input
             this.messageInput.value = '';
             this.autoResizeTextarea();
@@ -437,19 +559,19 @@ class FlexBaseChat {
             });
 
             const data = await response.json();
-            
+
             if (data.success) {
                 // Remove temporary message
                 messageElement.remove();
-                
+
                 // Add real message
                 const realMessageElement = this.createMessageElement(data.message);
                 this.messagesList.appendChild(realMessageElement);
                 this.scrollToBottom();
-                
+
                 // Update chat in sidebar
                 this.updateChatLastMessage(this.currentChatId, data.message);
-                
+
                 // Stop typing
                 this.stopTyping();
             } else {
@@ -503,13 +625,13 @@ class FlexBaseChat {
                 <img src="${user.profileImage || '/images/default-profile.jpg'}" alt="${user.username}" class="search-result-avatar">
                 <div class="search-result-name">${this.escapeHtml(user.username)}</div>
             `;
-            
+
             resultElement.addEventListener('click', () => {
                 this.startChatWithUser(user);
                 this.searchResults.style.display = 'none';
                 this.userSearchInput.value = '';
             });
-            
+
             this.searchResults.appendChild(resultElement);
         });
 
@@ -528,7 +650,7 @@ class FlexBaseChat {
             });
 
             const data = await response.json();
-            
+
             if (data.success) {
                 // Add to chats list if new
                 const existingChat = this.chats.find(c => c._id === data.chat._id);
@@ -536,7 +658,7 @@ class FlexBaseChat {
                     this.chats.unshift(data.chat);
                     this.renderChats();
                 }
-                
+
                 // Select the chat
                 await this.selectChat(data.chat._id, 'private', user);
             }
@@ -578,7 +700,7 @@ class FlexBaseChat {
 
     handleTypingIndicator(data) {
         if (data.chatId !== this.currentChatId || data.userId === window.currentUser.id) return;
-        
+
         if (data.isTyping) {
             this.typingAvatar.src = data.profileImage || '/images/default-profile.jpg';
             this.typingUsername.textContent = data.username;
@@ -605,16 +727,16 @@ class FlexBaseChat {
         if (chatElement) {
             const lastMessageEl = chatElement.querySelector('.chat-last-message');
             const timeEl = chatElement.querySelector('.chat-time');
-            
+
             if (lastMessageEl) {
                 const preview = message.sender._id === window.currentUser.id ? 'You: ' : '';
                 lastMessageEl.textContent = preview + message.content;
             }
-            
+
             if (timeEl) {
                 timeEl.textContent = this.formatTimeAgo(new Date(message.createdAt));
             }
-            
+
             // Move chat to top
             this.chatsList.prepend(chatElement);
         }
@@ -641,7 +763,7 @@ class FlexBaseChat {
     formatTimeAgo(date) {
         const now = new Date();
         const diffInSeconds = Math.floor((now - date) / 1000);
-        
+
         if (diffInSeconds < 60) return 'now';
         if (diffInSeconds < 3600) return Math.floor(diffInSeconds / 60) + 'm';
         if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + 'h';
@@ -650,10 +772,10 @@ class FlexBaseChat {
     }
 
     formatMessageTime(date) {
-        return date.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
+        return date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
             minute: '2-digit',
-            hour12: true 
+            hour12: true
         });
     }
 

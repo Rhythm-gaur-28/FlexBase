@@ -263,5 +263,82 @@ router.get('/search-users', authRequired, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+// Clear chat messages
+router.delete('/chats/:chatId/clear', authRequired, async (req, res) => {
+  try {
+    const { chatId } = req.params;
+
+    // Find the chat
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      return res.status(404).json({ success: false, message: 'Chat not found' });
+    }
+
+    // Check permissions
+    if (chat.type === 'private') {
+      // For private chats, user must be a participant
+      if (!chat.participants.includes(req.user._id)) {
+        return res.status(403).json({ success: false, message: 'Access denied' });
+      }
+    } else if (chat.type === 'community') {
+      // For community chats, you might want to restrict this to admins only
+      // For now, allow any participant to clear (you can modify this logic)
+      if (!chat.participants.includes(req.user._id)) {
+        return res.status(403).json({ success: false, message: 'Access denied' });
+      }
+    }
+
+    // Count messages before deletion for logging
+    const messageCount = await Message.countDocuments({ chatId, deleted: false });
+    
+    // Mark all messages as deleted (soft delete)
+    await Message.updateMany(
+      { chatId, deleted: false },
+      { 
+        deleted: true, 
+        deletedAt: new Date(),
+        deletedBy: req.user._id
+      }
+    );
+
+    // Update chat's last message to null
+    chat.lastMessage = null;
+    chat.lastActivity = new Date();
+    await chat.save();
+
+    // Log the action
+    console.log(`🧹 Chat cleared: ${chat.type} chat (${chatId}) - ${messageCount} messages deleted by user ${req.user.username}`);
+
+    // Emit to all chat participants
+    const io = req.app.get('io');
+    if (io) {
+      chat.participants.forEach(participantId => {
+        if (participantId.toString() !== req.user._id.toString()) {
+          io.to(`user_${participantId}`).emit('chatCleared', {
+            chatId,
+            chatType: chat.type,
+            clearedBy: {
+              id: req.user._id,
+              username: req.user.username
+            }
+          });
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `Successfully cleared ${messageCount} messages`,
+      messagesDeleted: messageCount
+    });
+
+  } catch (error) {
+    console.error('❌ Error clearing chat:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error while clearing chat' 
+    });
+  }
+});
 
 module.exports = router;
