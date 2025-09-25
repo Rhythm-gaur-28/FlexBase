@@ -41,20 +41,21 @@ exports.registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
     
-    // Validate input
+    // Validate input fields
     if (!username || !email || !password) {
       return res.render('register', { error: 'All fields are required' });
     }
-    
-    if (password.length < 6) {
-      return res.render('register', { error: 'Password must be at least 6 characters long' });
+
+    // Password constraints: min 6 chars, at least 1 uppercase and 1 special char
+    const passwordPattern = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-={}\[\]:;"'<>,.?/~`|\\]).{6,}$/;
+    if (!passwordPattern.test(password)) {
+      return res.render('register', {
+        error: 'Password must be at least 6 characters, include 1 uppercase letter and 1 special character.'
+      });
     }
-    
+
     // Check if email or username already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }] 
-    });
-    
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
       if (existingUser.email === email) {
         return res.render('register', { error: 'Email already in use' });
@@ -62,25 +63,25 @@ exports.registerUser = async (req, res) => {
         return res.render('register', { error: 'Username already taken' });
       }
     }
-    
+
     // Hash password before saving
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    
+
     const newUser = new User({ 
       username, 
       email, 
       password: hashedPassword 
     });
-    
+
     await newUser.save();
-    
+
     // Create JWT token
     const token = generateToken(newUser._id);
-    
+
     // Set secure cookie
     setTokenCookie(res, token);
-    
+
     console.log(`New user registered: ${username} (${email})`);
     res.redirect('/');
   } catch (err) {
@@ -88,6 +89,7 @@ exports.registerUser = async (req, res) => {
     res.render('register', { error: 'Server error. Please try again later.' });
   }
 };
+
 
 // Login user
 exports.loginUser = async (req, res) => {
