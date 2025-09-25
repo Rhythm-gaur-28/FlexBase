@@ -1,13 +1,23 @@
-/* General Body and Container Styling */
+/* Reset body layout to normal document flow */
 body {
     font-family: 'Cormorant Garamond', serif;
     background-color: #f0f2f5;
     color: #4b5563;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column; /* Changed to column layout */
+}
+
+/* Main content wrapper to center the form */
+.main-content {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
     padding: 2rem;
+    min-height: calc(100vh - 120px); /* Account for navbar and footer */
 }
 
 .add-shoe-wizard {
@@ -17,6 +27,7 @@ body {
     width: 100%;
     max-width: 800px;
     box-sizing: border-box;
+    border-radius: 12px; /* Added some border radius for modern look */
 }
 
 /* Headings and Labels */
@@ -194,30 +205,6 @@ button {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* .btn-prev {
-    background-color: #f3f4f6;
-    color: #0a3f93;
-    border: 2px solid #d1d5db;
-}
-
-.btn-prev:hover {
-    background-color: #e5e7eb;
-    border-color: #9ca3af;
-    transform: translateY(-1px);
-} */
-
-/* .btn-primary {
-    background-color: #3b82f6;
-    color: white;
-    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
-}
-
-.btn-primary:hover {
-    background-color: #2563eb;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-} */
-
 /* Add More Button - only shows when images exist */
 #addMoreBtn {
     background-color: #ffffff;
@@ -261,18 +248,6 @@ button {
     margin-top: 0;
 }
 
-/* .owner-block button {
-    background-color: #ef4444;
-    color: white;
-    padding: 8px 12px;
-    font-size: 12px;
-    border-radius: 4px;
-} */
-
-/* .owner-block button:hover {
-    background-color: #dc2626;
-} */
-
 .toast {
     position: fixed;
     bottom: 20px;
@@ -291,4 +266,25 @@ button {
 .toast.show {
     visibility: visible;
     opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+        min-height: calc(100vh - 100px);
+    }
+    
+    .add-shoe-wizard {
+        padding: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.8rem;
+    }
+    
+    .owner-block {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
 }

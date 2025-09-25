@@ -5,10 +5,13 @@
   <meta charset="UTF-8">
   <title>Add Shoe to Collection</title>
   <link rel="stylesheet" href="/css/addCollection.css">
+  <!-- <link rel="stylesheet" href="/css/footer.css"> -->
 </head>
 
 <body>
   <%- include('partials/navbar') %>
+  
+  <div class="main-content">
     <div class="add-shoe-wizard">
       <form id="addCollectionForm" enctype="multipart/form-data">
         <!-- Step 1: Images -->
@@ -46,7 +49,10 @@
       </form>
       <div id="toast" class="toast"></div>
     </div>
-    <script src="/js/collection-add.js"></script>
+  </div>
+  
+  
+  <script src="/js/collection-add.js"></script>
 </body>
 
 </html>

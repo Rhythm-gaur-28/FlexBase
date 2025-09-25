@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/css/profile.css" />
   <link rel="stylesheet" href="/css/explore.css" />
+  <link rel="stylesheet" href="/css/footer.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
@@ -194,7 +195,7 @@
 
 
     </div>
-
+<%- include('partials/footer') %>
   <script>
     // Optional: pass current user if needed by navbar
     window.__currentUser = <%- JSON.stringify(user || null) %>;
