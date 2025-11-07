@@ -490,5 +490,46 @@ router.delete('/api/posts/:postId/comment/:commentId', authRequired, async (req,
   }
 });
 
+// Newsletter subscription endpoint
+router.post('/api/newsletter/subscribe', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    // Validate email
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address'
+      });
+    }
 
+    // Here you can add email to your database or email service
+    // For now, we'll just simulate success
+    
+    // You might want to create a Newsletter model:
+    // const Newsletter = require('../models/Newsletter');
+    // const existingSubscription = await Newsletter.findOne({ email });
+    // if (existingSubscription) {
+    //   return res.json({
+    //     success: true,
+    //     message: 'You are already subscribed to our newsletter!'
+    //   });
+    // }
+    // await Newsletter.create({ email, subscribedAt: new Date() });
+
+    console.log(`📧 New newsletter subscription: ${email}`);
+    
+    res.json({
+      success: true,
+      message: 'Successfully subscribed to FlexBase newsletter!'
+    });
+    
+  } catch (error) {
+    console.error('Newsletter subscription error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Subscription failed. Please try again later.'
+    });
+  }
+});
 module.exports = router;

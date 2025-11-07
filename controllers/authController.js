@@ -63,14 +63,11 @@ exports.registerUser = async (req, res) => {
       }
     }
     
-    // Hash password before saving
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    
+    // REMOVED: Don't hash here - let the User model handle it
     const newUser = new User({ 
       username, 
       email, 
-      password: hashedPassword 
+      password // ← Pass plain password, model will hash it
     });
     
     await newUser.save();
