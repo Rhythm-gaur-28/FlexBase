@@ -218,7 +218,6 @@ app.use((req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 4000;
-server.listen(PORT, () => {
-  console.log(`🚀 FlexBase server running on http://localhost:${PORT}`);
-  console.log(`🔌 Socket.IO server ready for connections`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 FlexBase server running on port ${PORT}`);
 });
