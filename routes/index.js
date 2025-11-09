@@ -38,24 +38,26 @@ const uploadCollection = multer({ storage: collectionStorage });
 
 // ---------- Home Page (Landing/Explore) ----------
 router.get('/', async (req, res) => {
+  console.log('📍 Hit / route inside index.js');
   try {
     const category = req.query.category || 'new-arrivals';
     const row1Products = await Product.find({ section: 'row1', category });
     const row2Products = await Product.find({ section: 'row2', category });
     const row3Products = await Product.find({ section: 'row3', category });
-
     const shoeOfDay = await Product.findOne({ featured: true }) || {
       name: "2025 Nike The Best Classical",
       description: "Designed by Nike, this shoe is the perfect fit for the modern man. Its classic design and timeless style make it a must-have for any fashionista.",
       image: "/images/shoe-of-day.png"
     };
 
+    console.log('✅ Rendering index.ejs');
     res.render('index', { row1Products, row2Products, row3Products, category, shoeOfDay });
   } catch (err) {
     console.error('❌ Error rendering / route:', err);
     res.status(500).send('Internal Server Error');
   }
 });
+
 router.get('/api/products/:category', async (req, res) => {
   try {
     const category = req.params.category;
