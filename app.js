@@ -202,7 +202,8 @@ io.on('connection', async (socket) => {
     console.error('Error in socket connection handler:', error);
   }
 });
-
+app.get('/', (req, res) => res.send('✅ Root route reached in app.js'));
+app.get('/test', (req, res) => res.send('✅ Express routing works on Railway'));
 // Routes
 const indexRoutes = require('./routes/index');
 app.use('/', indexRoutes);
