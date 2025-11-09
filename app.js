@@ -72,6 +72,8 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
+console.log("Views directory:", path.join(__dirname, "views"));
+console.log("Current working directory:", process.cwd());
 
 // Socket.IO Authentication Middleware
 io.use(async (socket, next) => {
