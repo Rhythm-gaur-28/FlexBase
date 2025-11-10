@@ -1,3 +1,4 @@
+// routes/index.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -11,6 +12,47 @@ const Post = require('../models/Post');
 const authRequired = require('../middleware/authRequired');
 const authController = require('../controllers/authController');
 
+// Cloudinary + Multer storage
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const profileStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'flexbase/profiles',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'avif', 'webp'],
+    public_id: (req, file) => `user_${req.user?._id || Date.now()}`
+  }
+});
+
+const collectionStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'flexbase/collections',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    public_id: (req, file) => `collection_${Date.now()}`
+  }
+});
+
+const postStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'flexbase/posts',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    public_id: (req, file) => `post_${Date.now()}`
+  }
+});
+
+const uploadProfile = multer({ storage: profileStorage });
+const uploadCollection = multer({ storage: collectionStorage });
+const uploadPost = multer({ storage: postStorage });
+
 // Import chat routes
 const chatRoutes = require('./chat');
 
@@ -19,22 +61,11 @@ router.use('/api/chat', chatRoutes);
 
 // Chat page route
 router.get('/chat', authRequired, async (req, res) => {
-    res.render('chat', {
-        title: 'Chat | FlexBase',
-        user: req.user
-    });
+  res.render('chat', {
+    title: 'Chat | FlexBase',
+    user: req.user
+  });
 });
-// ---------- Multer Storage Setup ----------
-const profileStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'public/uploads/profiles/'),
-  filename: (req, file, cb) => cb(null, `user_${req.user._id}${path.extname(file.originalname)}`)
-});
-const collectionStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'public/uploads/collections/'),
-  filename: (req, file, cb) => cb(null, Date.now() + '_' + file.originalname)
-});
-const uploadProfile = multer({ storage: profileStorage });
-const uploadCollection = multer({ storage: collectionStorage });
 
 // ---------- Home Page (Landing/Explore) ----------
 router.get('/', async (req, res) => {
@@ -94,7 +125,9 @@ router.get('/logout', authController.logoutUser);
 router.get('/collections/add', authRequired, (req, res) => {
   res.render('addCollectionItem', { error: null, users: [] });
 });
+
 router.post('/collections/add', authRequired, (req, res, next) => {
+  // Cloudinary-backed upload
   uploadCollection.array('images')(req, res, (err) => {
     if (err) {
       console.error("Multer upload error:", err);
@@ -116,7 +149,8 @@ router.post('/collections/add', authRequired, (req, res, next) => {
       to: pTo[idx] || null
     }));
 
-    const imagePaths = req.files.map(file => '/uploads/collections/' + file.filename);
+    // Cloudinary returns file.path (public URL)
+    const imagePaths = (req.files || []).map(file => file.path);
 
     const newCollection = new Collection({
       user: req.user._id,
@@ -135,8 +169,6 @@ router.post('/collections/add', authRequired, (req, res, next) => {
     res.status(500).json({ success: false, message: 'Error adding shoe.' });
   }
 });
-
-
 
 router.get('/collections/user/:userId', authRequired, async (req, res) => {
   const collections = await Collection.find({ user: req.params.userId }).populate('previousOwners.user');
@@ -159,23 +191,26 @@ router.get('/profile', authRequired, async (req, res) => {
     viewingSelf,
     followers,
     following,
-    posts, // Make sure posts are passed
+    posts,
     collections,
     saved,
     isFollowing: false
   });
 });
+
 router.post('/profile/update', authRequired, uploadProfile.single('profilePicture'), async (req, res) => {
   try {
     const update = {
       bio: req.body.bio
     };
     if (req.file) {
-      update.profileImage = '/uploads/profiles/' + req.file.filename;
+      // Cloudinary public URL
+      update.profileImage = req.file.path;
     }
     const user = await User.findByIdAndUpdate(req.user._id, update, { new: true });
     res.json({ success: true, user });
   } catch (error) {
+    console.error('Error updating profile:', error);
     res.status(500).json({ error: 'Failed to update profile' });
   }
 });
@@ -223,14 +258,14 @@ router.get('/u/:username', authRequired, async (req, res) => {
     viewingSelf,
     followers,
     following,
-    posts, // Make sure posts are passed
+    posts,
     collections,
     saved: [],
     isFollowing
   });
 });
 
-// Follow/Unfollow routes (add these to your routes/index.js)
+// Follow/Unfollow routes
 router.post('/u/:username/follow', authRequired, async (req, res) => {
   try {
     if (req.user.username === req.params.username) {
@@ -249,6 +284,7 @@ router.post('/u/:username/follow', authRequired, async (req, res) => {
     await req.user.save();
     res.json({ success: true });
   } catch (error) {
+    console.error('Follow error:', error);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 });
@@ -267,9 +303,11 @@ router.post('/u/:username/unfollow', authRequired, async (req, res) => {
     await req.user.save();
     res.json({ success: true });
   } catch (error) {
+    console.error('Unfollow error:', error);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 });
+
 // Remove a follower (for your own profile)
 router.post('/profile/remove-follower', authRequired, async (req, res) => {
   try {
@@ -289,6 +327,7 @@ router.post('/profile/remove-follower', authRequired, async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
+    console.error('Remove follower error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -312,22 +351,16 @@ router.post('/profile/unfollow-user', authRequired, async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
+    console.error('Unfollow user error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-// Add post storage configuration
-const postStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'public/uploads/posts/'),
-  filename: (req, file, cb) => cb(null, Date.now() + '_' + file.originalname)
-});
-const uploadPost = multer({ storage: postStorage });
 
-// GET route for add post page
+// Add post storage configuration (Cloudinary-backed)
 router.get('/posts/add', authRequired, (req, res) => {
   res.render('addPost');
 });
 
-// POST route for creating post
 router.post('/posts/add', authRequired, (req, res, next) => {
   uploadPost.array('images')(req, res, (err) => {
     if (err) {
@@ -342,7 +375,7 @@ router.post('/posts/add', authRequired, (req, res, next) => {
       return res.status(400).json({ success: false, message: 'At least one image is required.' });
     }
 
-    const imagePaths = req.files.map(file => '/uploads/posts/' + file.filename);
+    const imagePaths = req.files.map(file => file.path); // Cloudinary URLs
 
     // Process hashtags
     const hashtags = req.body.hashtags ?
@@ -362,6 +395,7 @@ router.post('/posts/add', authRequired, (req, res, next) => {
     res.status(500).json({ success: false, message: 'Error creating post.' });
   }
 });
+
 // Get single post with full data
 router.get('/api/posts/:postId', authRequired, async (req, res) => {
   try {
@@ -387,6 +421,7 @@ router.get('/api/posts/:postId', authRequired, async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Get post error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -419,6 +454,7 @@ router.post('/api/posts/:postId/like', authRequired, async (req, res) => {
       likesCount: post.likes.length 
     });
   } catch (error) {
+    console.error('Toggle like error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -458,9 +494,11 @@ router.post('/api/posts/:postId/comment', authRequired, async (req, res) => {
       commentsCount: post.comments.length 
     });
   } catch (error) {
+    console.error('Add comment error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 // Delete comment from post (Updated with Instagram-like logic)
 router.delete('/api/posts/:postId/comment/:commentId', authRequired, async (req, res) => {
   try {
@@ -494,7 +532,7 @@ router.delete('/api/posts/:postId/comment/:commentId', authRequired, async (req,
       commentsCount: post.comments.length 
     });
   } catch (error) {
-    console.error('Error deleting comment:', error);
+    console.error('Delete comment error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -512,20 +550,6 @@ router.post('/api/newsletter/subscribe', async (req, res) => {
       });
     }
 
-    // Here you can add email to your database or email service
-    // For now, we'll just simulate success
-    
-    // You might want to create a Newsletter model:
-    // const Newsletter = require('../models/Newsletter');
-    // const existingSubscription = await Newsletter.findOne({ email });
-    // if (existingSubscription) {
-    //   return res.json({
-    //     success: true,
-    //     message: 'You are already subscribed to our newsletter!'
-    //   });
-    // }
-    // await Newsletter.create({ email, subscribedAt: new Date() });
-
     console.log(`📧 New newsletter subscription: ${email}`);
     
     res.json({
@@ -541,4 +565,5 @@ router.post('/api/newsletter/subscribe', async (req, res) => {
     });
   }
 });
+
 module.exports = router;
