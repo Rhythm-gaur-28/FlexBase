@@ -11,6 +11,7 @@ const Collection = require('../models/Collection');
 const Post = require('../models/Post');
 const authRequired = require('../middleware/authRequired');
 const authController = require('../controllers/authController');
+const cacheMiddleware = require('../middleware/cacheMiddleware'); // adjust path
 
 // Cloudinary + Multer storage
 const cloudinary = require('cloudinary').v2;
@@ -68,6 +69,7 @@ router.get('/chat', authRequired, async (req, res) => {
 });
 
 // ---------- Home Page (Landing/Explore) ----------
+
 router.get('/', async (req, res) => {
   console.log('📍 Hit / route inside index.js');
   try {
@@ -88,8 +90,7 @@ router.get('/', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
-router.get('/api/products/:category', async (req, res) => {
+router.get('/api/products/:category', cacheMiddleware('products:'), async (req, res) => {
   try {
     const category = req.params.category;
     const row1Products = await Product.find({ section: 'row1', category });
@@ -100,6 +101,7 @@ router.get('/api/products/:category', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch products' });
   }
 });
+
 
 // ---------- AUTH ----------
 // Display registration form
