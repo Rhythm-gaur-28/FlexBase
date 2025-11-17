@@ -10,7 +10,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cloudinary": "^1.41.3",
@@ -41,5 +40,9 @@
     "transform": {
       "^.+\\.js$": "babel-jest"
     }
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "description": ""
 }

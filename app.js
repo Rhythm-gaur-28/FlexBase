@@ -8,6 +8,8 @@ const socketIo = require('socket.io');
 require('dotenv').config();
 
 const app = express();
+
+// Create HTTP server and Socket.IO instance
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -17,6 +19,7 @@ const io = socketIo(server, {
   }
 });
 
+// Make io accessible to routes
 app.set('io', io);
 
 // Middleware
@@ -27,6 +30,8 @@ app.use(cookieParser());
 // Import models
 const User = require('./models/User');
 let UserStatus;
+
+// Try to import UserStatus, create a simple version if it fails
 try {
   UserStatus = require('./models/UserStatus');
 } catch (error) {
@@ -65,13 +70,136 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/flexbase'
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
-console.log("Views directory:", path.join(__dirname, "views"));
-console.log("Current working directory:", process.cwd());
 
-// Socket.IO logic (unchanged)
-// ...
+// Socket.IO Authentication Middleware
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth.token || socket.handshake.headers.cookie?.match(/token=([^;]+)/)?.[1];
+    
+    if (!token) {
+      return next(new Error('Authentication error: No token provided'));
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+    
+    if (!user) {
+      return next(new Error('Authentication error: User not found'));
+    }
+    
+    socket.userId = user._id.toString();
+    socket.username = user.username;
+    socket.profileImage = user.profileImage;
+    next();
+  } catch (err) {
+    console.error('Socket authentication error:', err);
+    next(new Error('Authentication error'));
+  }
+});
 
-// ✅ Use only your main routes
+// Socket.IO Connection Handler
+io.on('connection', async (socket) => {
+  try {
+    // Join user to their personal room
+    socket.join(`user_${socket.userId}`);
+    
+    // Update user online status (only if UserStatus model exists)
+    if (UserStatus && typeof UserStatus.findOneAndUpdate === 'function') {
+      await UserStatus.findOneAndUpdate(
+        { user: socket.userId },
+        { 
+          isOnline: true, 
+          lastSeen: new Date(), 
+          socketId: socket.id 
+        },
+        { upsert: true }
+      );
+
+      // Broadcast user online status to all connected clients
+      socket.broadcast.emit('userStatusUpdate', {
+        userId: socket.userId,
+        isOnline: true
+      });
+    }
+
+    // Handle typing indicators
+    socket.on('typing', ({ chatId, isTyping }) => {
+      if (!chatId) return;
+      
+      socket.to(`chat_${chatId}`).emit('userTyping', {
+        userId: socket.userId,
+        username: socket.username,
+        profileImage: socket.profileImage,
+        isTyping,
+        chatId
+      });
+    });
+
+    // Join chat rooms
+    socket.on('joinChat', (chatId) => {
+      if (chatId) {
+        socket.join(`chat_${chatId}`);
+      }
+    });
+
+    // Leave chat rooms
+    socket.on('leaveChat', (chatId) => {
+      if (chatId) {
+        socket.leave(`chat_${chatId}`);
+      }
+    });
+
+    // Handle message read status
+    socket.on('markMessagesRead', async ({ chatId, messageIds }) => {
+      if (!chatId || !messageIds || !Array.isArray(messageIds)) return;
+      
+      try {
+        socket.to(`chat_${chatId}`).emit('messagesRead', {
+          userId: socket.userId,
+          chatId,
+          messageIds
+        });
+      } catch (error) {
+        console.error('Error marking messages as read:', error);
+      }
+    });
+
+    // Handle disconnect
+    socket.on('disconnect', async () => {
+      try {
+        if (UserStatus && typeof UserStatus.findOneAndUpdate === 'function') {
+          await UserStatus.findOneAndUpdate(
+            { user: socket.userId },
+            { 
+              isOnline: false, 
+              lastSeen: new Date(),
+              socketId: null
+            }
+          );
+
+          // Broadcast user offline status to all connected clients
+          socket.broadcast.emit('userStatusUpdate', {
+            userId: socket.userId,
+            isOnline: false,
+            lastSeen: new Date()
+          });
+        }
+      } catch (error) {
+        console.error('Error updating user status on disconnect:', error);
+      }
+    });
+
+    // Handle connection errors
+    socket.on('error', (error) => {
+      console.error(`Socket error for user ${socket.username}:`, error);
+    });
+
+  } catch (error) {
+    console.error('Error in socket connection handler:', error);
+  }
+});
+
+// Routes
 const indexRoutes = require('./routes/index');
 app.use('/', indexRoutes);
 
@@ -90,4 +218,5 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 FlexBase server running on port ${PORT}`);
+  console.log(`🔌 Socket.IO server ready for connections`);
 });
