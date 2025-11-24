@@ -4,7 +4,50 @@ const Chat = require('../models/Chat');
 const Message = require('../models/Message');
 const User = require('../models/User');
 const UserStatus = require('../models/UserStatus');
+const Notification = require('../models/Notification');
 const authRequired = require('../middleware/authRequired');
+
+
+// ============= NOTIFICATION HELPER FOR CHAT =============
+async function createChatNotification(recipientId, senderId, chatId, messagePreview, io) {
+  try {
+    // Don't notify yourself
+    if (String(recipientId) === String(senderId)) {
+      return;
+    }
+    
+    const notification = new Notification({
+      recipient: recipientId,
+      sender: senderId,
+      type: 'new_message',
+      message: 'sent you a message',
+      relatedChat: chatId,
+      data: {
+        chatPreview: messagePreview
+      },
+      read: false
+    });
+    
+    await notification.save();
+    
+    // Send real-time notification
+    if (io) {
+      const populatedNotification = await Notification.findById(notification._id)
+        .populate('sender', 'username profileImage')
+        .lean();
+      
+      io.to(`user_${recipientId}`).emit('newNotification', {
+        notification: populatedNotification
+      });
+    }
+    
+    console.log(`✅ Chat notification sent to user ${recipientId}`);
+    
+  } catch (error) {
+    console.error('Error creating chat notification:', error);
+  }
+}
+// ============= END NOTIFICATION HELPER =============
 
 // Get user's chat list
 router.get('/chats', authRequired, async (req, res) => {
@@ -120,8 +163,7 @@ router.get('/chats/:chatId/messages', authRequired, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-
-// Send message (FIXED: Prevent duplicates)
+// Send message with notifications
 router.post('/chats/:chatId/messages', authRequired, async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -166,26 +208,61 @@ router.post('/chats/:chatId/messages', authRequired, async (req, res) => {
     chat.lastActivity = new Date();
     await chat.save();
 
-    // FIXED: Emit to Socket.IO only once
+    // Get Socket.IO instance
     const io = req.app.get('io');
+    
     if (io) {
-      // For community chat, emit to all users except sender
+      // Prepare message preview for notifications
+      const messagePreview = content.trim().substring(0, 50) + (content.length > 50 ? '...' : '');
+      
+      // For community chat
       if (chat.type === 'community') {
+        // Emit message to all users
         io.emit('newMessage', {
           chatId,
           message,
           senderId: req.user._id.toString()
         });
+        
+        // ⭐ NEW - Send notifications to all community members except sender
+        const otherParticipants = chat.participants.filter(
+          participantId => participantId.toString() !== req.user._id.toString()
+        );
+        
+        for (const participantId of otherParticipants) {
+          await createChatNotification(
+            participantId,
+            req.user._id,
+            chatId,
+            `📢 Community: ${messagePreview}`,
+            io
+          );
+        }
+        
       } else {
-        // For private chat, emit to other participant
-        chat.participants.forEach(participantId => {
-          if (participantId.toString() !== req.user._id.toString()) {
-            io.to(`user_${participantId}`).emit('newMessage', {
-              chatId,
-              message
-            });
-          }
+        // For private chat
+        const otherParticipants = chat.participants.filter(
+          participantId => participantId.toString() !== req.user._id.toString()
+        );
+        
+        otherParticipants.forEach(participantId => {
+          // Emit real-time message
+          io.to(`user_${participantId}`).emit('newMessage', {
+            chatId,
+            message
+          });
         });
+        
+        // ⭐ NEW - Send notification to other participant
+        for (const participantId of otherParticipants) {
+          await createChatNotification(
+            participantId,
+            req.user._id,
+            chatId,
+            messagePreview,
+            io
+          );
+        }
       }
     }
 
@@ -198,6 +275,7 @@ router.post('/chats/:chatId/messages', authRequired, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 // Create or get private chat
 router.post('/chats/private', authRequired, async (req, res) => {

@@ -8,6 +8,7 @@ const User = require('../models/User');
 const Product = require('../models/Product');
 const Collection = require('../models/Collection');
 const Post = require('../models/Post');
+const Notification = require('../models/Notification');
 const authRequired = require('../middleware/authRequired');
 const authController = require('../controllers/authController');
 const cacheMiddleware = require('../middleware/cacheMiddleware');
@@ -52,6 +53,59 @@ const postStorage = new CloudinaryStorage({
 const uploadProfile = multer({ storage: profileStorage });
 const uploadCollection = multer({ storage: collectionStorage });
 const uploadPost = multer({ storage: postStorage });
+
+// ============= NOTIFICATION HELPER FUNCTION =============
+async function createNotification(recipientId, senderId, type, data, io) {
+  try {
+    // Don't notify yourself
+    if (String(recipientId) === String(senderId)) {
+      return;
+    }
+    
+    const messages = {
+      'follow': 'started following you',
+      'like': 'liked your post',
+      'comment': 'commented on your post',
+      'new_message': 'sent you a message'
+    };
+    
+    const notification = new Notification({
+      recipient: recipientId,
+      sender: senderId,
+      type: type,
+      message: messages[type] || 'New notification',
+      relatedPost: data?.postId,
+      relatedChat: data?.chatId,
+      data: {
+        postImage: data?.postImage,
+        commentText: data?.commentText,
+        chatPreview: data?.chatPreview
+      },
+      read: false
+    });
+    
+    await notification.save();
+    
+    // Send real-time notification
+    if (io) {
+      const populatedNotification = await Notification.findById(notification._id)
+        .populate('sender', 'username profileImage')
+        .populate('relatedPost', 'images')
+        .lean();
+      
+      io.to(`user_${recipientId}`).emit('newNotification', {
+        notification: populatedNotification
+      });
+    }
+    
+    console.log(`✅ Notification sent: ${type} to user ${recipientId}`);
+    
+  } catch (error) {
+    console.error('Error creating notification:', error);
+  }
+}
+// ============= END NOTIFICATION HELPER =============
+
 
 // Import chat routes
 const chatRoutes = require('./chat');
@@ -292,6 +346,11 @@ router.post('/u/:username/follow', authRequired, async (req, res) => {
     req.user.following.push(target._id);
     await target.save();
     await req.user.save();
+
+    // ⭐ NEW - Send notification
+    const io = req.app.get('io');
+    await createNotification(target._id, req.user._id, 'follow', {}, io);
+
     res.json({ success: true });
   } catch (error) {
     console.error('Follow error:', error);
@@ -429,7 +488,7 @@ router.get('/api/posts/:postId', authRequired, async (req, res) => {
 
 router.post('/api/posts/:postId/like', authRequired, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId).populate('user', '_id');
     if (!post) {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
@@ -443,6 +502,13 @@ router.post('/api/posts/:postId/like', authRequired, async (req, res) => {
     } else {
       post.likes.push(req.user._id);
       isLiked = true;
+      
+      // ⭐ NEW - Send notification when liking
+      const io = req.app.get('io');
+      await createNotification(post.user._id, req.user._id, 'like', {
+        postId: post._id,
+        postImage: post.images[0]
+      }, io);
     }
 
     await post.save();
@@ -451,6 +517,7 @@ router.post('/api/posts/:postId/like', authRequired, async (req, res) => {
       isLiked, 
       likesCount: post.likes.length 
     });
+
   } catch (error) {
     console.error('Toggle like error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -464,7 +531,7 @@ router.post('/api/posts/:postId/comment', authRequired, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Comment text required' });
     }
 
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId).populate('user', '_id');
     if (!post) {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
@@ -483,6 +550,14 @@ router.post('/api/posts/:postId/comment', authRequired, async (req, res) => {
       .lean();
 
     const addedComment = populatedPost.comments[populatedPost.comments.length - 1];
+
+    // ⭐ NEW - Send notification
+    const io = req.app.get('io');
+    await createNotification(post.user._id, req.user._id, 'comment', {
+      postId: post._id,
+      commentText: text.trim().substring(0, 50),
+      postImage: post.images[0]
+    }, io);
 
     res.json({ 
       success: true, 

@@ -403,3 +403,63 @@
   animation: pulse 2s infinite;
 }
 
+/* Social Notification Icons */
+.notif-icon.follow {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.notif-icon.like {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.notif-icon.comment {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.notif-icon.new_message {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+/* Sender Avatar */
+.notif-sender-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f96c2b;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
+/* Post Thumbnail */
+.notif-post-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Comment Preview */
+.comment-preview {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+  display: block;
+  margin-top: 4px;
+}
+
+
+/* Chat Preview */
+.chat-preview {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+  display: block;
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  border-left: 3px solid #43e97b;
+}

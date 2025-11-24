@@ -29,6 +29,7 @@ async function loadPendingTransactions() {
   }
 }
 
+// Display notifications with full social support
 function displayNotifications(notifications) {
   const container = document.getElementById('notificationsList');
   
@@ -37,22 +38,40 @@ function displayNotifications(notifications) {
     return;
   }
   
-  container.innerHTML = notifications.map(notif => `
-    <div class="notification-item ${notif.read ? 'read' : 'unread'}" 
-         data-notification-id="${notif._id}"
-         onclick="markAsRead('${notif._id}')">
-      <div class="notif-icon ${notif.type}">
-        ${getNotificationIcon(notif.type)}
+  container.innerHTML = notifications.map(notif => {
+    const senderName = notif.sender?.username || 'Someone';
+    const senderImage = notif.sender?.profileImage || '/images/default-profile.jpg';
+    const postImage = notif.data?.postImage || '';
+    
+    return `
+      <div class="notification-item ${notif.read ? 'read' : 'unread'}" 
+           data-notification-id="${notif._id}"
+           onclick="handleNotificationClick('${notif._id}', '${notif.type}', '${notif.relatedPost?._id || ''}', '${notif.relatedChat || ''}')">
+        
+        <!-- Sender Avatar -->
+        <img src="${senderImage}" alt="${senderName}" class="notif-sender-avatar">
+        
+        <div class="notif-icon ${notif.type}">
+          ${getNotificationIcon(notif.type)}
+        </div>
+        
+        <div class="notif-content">
+          <p class="notif-message">
+            <strong>${senderName}</strong> ${notif.message}
+            ${notif.data?.commentText ? `<br><span class="comment-preview">"${notif.data.commentText}"</span>` : ''}
+            ${notif.data?.chatPreview ? `<br><span class="chat-preview">"${notif.data.chatPreview}"</span>` : ''}
+          </p>
+          <span class="notif-time">${getTimeAgo(new Date(notif.createdAt))}</span>
+        </div>
+        
+        ${postImage ? `<img src="${postImage}" alt="Post" class="notif-post-thumb">` : ''}
+        ${!notif.read ? '<div class="unread-dot"></div>' : ''}
       </div>
-      <div class="notif-content">
-        <p class="notif-message">${notif.message}</p>
-        <span class="notif-time">${getTimeAgo(new Date(notif.createdAt))}</span>
-      </div>
-      ${!notif.read ? '<div class="unread-dot"></div>' : ''}
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
+// Display pending transactions
 function displayPendingTransactions(transactions) {
   const container = document.getElementById('pendingTransactions');
   
@@ -77,6 +96,7 @@ function displayPendingTransactions(transactions) {
   `).join('');
 }
 
+// Confirm payment
 async function confirmPayment(transactionId) {
   if (!confirm('Confirm that you have received the payment?')) return;
   
@@ -101,6 +121,7 @@ async function confirmPayment(transactionId) {
   }
 }
 
+// Reject payment
 async function rejectPayment(transactionId) {
   const reason = prompt('Why are you rejecting this payment?');
   if (!reason) return;
@@ -127,7 +148,7 @@ async function rejectPayment(transactionId) {
   }
 }
 
-// FIXED: Mark as read function
+// Mark single notification as read
 async function markAsRead(notificationId) {
   try {
     console.log('Marking notification as read:', notificationId);
@@ -163,7 +184,7 @@ async function markAsRead(notificationId) {
   }
 }
 
-// FIXED: Mark all as read
+// Mark all notifications as read
 async function markAllRead() {
   try {
     console.log('Marking all notifications as read');
@@ -211,21 +232,52 @@ async function markAllRead() {
   }
 }
 
+// Handle notification clicks with navigation
+async function handleNotificationClick(notificationId, type, postId, chatId) {
+  // Mark as read first
+  await markAsRead(notificationId);
+  
+  // Navigate based on notification type
+  if (type === 'new_message' && chatId) {
+    // Redirect to chat with the specific chat open
+    window.location.href = `/chat?chatId=${chatId}`;
+  } else if ((type === 'like' || type === 'comment') && postId) {
+    // If you have a post detail page, navigate there
+    // For now, just reload to show the updated state
+    window.location.reload();
+  } else if (type === 'follow') {
+    // For follow notifications, just mark as read (no navigation needed)
+    // Already marked as read above
+  } else if (type.includes('payment') || type.includes('purchase') || type.includes('offer')) {
+    // For marketplace/payment notifications, stay on notification page
+    // Already marked as read
+  }
+}
+
+// Get notification icon based on type
 function getNotificationIcon(type) {
   const icons = {
+    // Marketplace
     'payment_submitted': '💳',
     'payment_confirmed': '✅',
     'payment_rejected': '❌',
     'purchase_complete': '🎉',
+    // Offers
     'offer_received': '💵',
     'offer_accepted': '✔️',
     'offer_declined': '❌',
     'payment_requested': '💰',
-    'ownership_transferred': '🎁'
+    'ownership_transferred': '🎁',
+    // Social
+    'follow': '👤',
+    'like': '❤️',
+    'comment': '💬',
+    'new_message': '✉️'
   };
   return icons[type] || '🔔';
 }
 
+// Get relative time (e.g., "2m ago", "3h ago")
 function getTimeAgo(date) {
   const seconds = Math.floor((new Date() - date) / 1000);
   
@@ -236,7 +288,7 @@ function getTimeAgo(date) {
   return date.toLocaleDateString();
 }
 
-// Load on page load
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Notifications page loaded');
   loadNotifications();

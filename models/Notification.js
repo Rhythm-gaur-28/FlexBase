@@ -17,12 +17,16 @@ const notificationSchema = new mongoose.Schema({
       'payment_confirmed', 
       'payment_rejected', 
       'purchase_complete',
-      // NEW OFFER TYPES
       'offer_received',
       'offer_accepted',
       'offer_declined',
       'payment_requested',
-      'ownership_transferred'
+      'ownership_transferred',
+      // NEW SOCIAL TYPES
+      'follow',
+      'like',
+      'comment',
+      'new_message'
     ],
     required: true 
   },
@@ -38,7 +42,6 @@ const notificationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Listing' 
   },
-  // NEW FIELDS FOR OFFERS
   relatedOffer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Offer'
@@ -47,10 +50,23 @@ const notificationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Collection'
   },
+  // NEW SOCIAL FIELDS
+  relatedPost: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post'
+  },
+  relatedChat: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chat'
+  },
   data: {
     amount: Number,
     reason: String,
-    paymentMethod: String
+    paymentMethod: String,
+    // NEW
+    postImage: String,
+    commentText: String,
+    chatPreview: String
   },
   read: { 
     type: Boolean, 
