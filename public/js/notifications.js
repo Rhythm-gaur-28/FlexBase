@@ -38,7 +38,9 @@ function displayNotifications(notifications) {
   }
   
   container.innerHTML = notifications.map(notif => `
-    <div class="notification-item ${notif.read ? '' : 'unread'}" onclick="markAsRead('${notif._id}')">
+    <div class="notification-item ${notif.read ? 'read' : 'unread'}" 
+         data-notification-id="${notif._id}"
+         onclick="markAsRead('${notif._id}')">
       <div class="notif-icon ${notif.type}">
         ${getNotificationIcon(notif.type)}
       </div>
@@ -57,19 +59,19 @@ function displayPendingTransactions(transactions) {
   container.innerHTML = transactions.map(tx => `
     <div class="pending-transaction-card">
       <div class="tx-info">
-        <img src="${tx.buyer.profileImage}" alt="${tx.buyer.username}" class="buyer-avatar">
+        <img src="${tx.buyer.profileImage || '/images/default-profile.jpg'}" alt="${tx.buyer.username}" class="buyer-avatar">
         <div>
           <h3>${tx.buyer.username} wants to buy ${tx.collection.brand}</h3>
           <p class="tx-amount">Amount: $${tx.amount}</p>
           <p class="tx-payment">Payment Method: ${tx.paymentMethod.type}</p>
           <p class="tx-details">Details: ${tx.paymentMethod.details}</p>
-          ${tx.paymentProof.transactionId ? `<p class="tx-ref">Ref: ${tx.paymentProof.transactionId}</p>` : ''}
-          ${tx.paymentProof.notes ? `<p class="tx-notes">Notes: ${tx.paymentProof.notes}</p>` : ''}
+          ${tx.paymentProof?.transactionId ? `<p class="tx-ref">Ref: ${tx.paymentProof.transactionId}</p>` : ''}
+          ${tx.paymentProof?.notes ? `<p class="tx-notes">Notes: ${tx.paymentProof.notes}</p>` : ''}
         </div>
       </div>
       <div class="tx-actions">
-        <button onclick="confirmPayment('${tx._id}')" class="btn-confirm">✓ Confirm Payment Received</button>
-        <button onclick="rejectPayment('${tx._id}')" class="btn-reject">✗ Payment Not Received</button>
+        <button onclick="event.stopPropagation(); confirmPayment('${tx._id}')" class="btn-confirm">✓ Confirm Payment Received</button>
+        <button onclick="event.stopPropagation(); rejectPayment('${tx._id}')" class="btn-reject">✗ Payment Not Received</button>
       </div>
     </div>
   `).join('');
@@ -125,20 +127,88 @@ async function rejectPayment(transactionId) {
   }
 }
 
+// FIXED: Mark as read function
 async function markAsRead(notificationId) {
   try {
-    await fetch(`/notifications/api/notifications/${notificationId}/read`, {
-      method: 'POST'
+    console.log('Marking notification as read:', notificationId);
+    
+    const response = await fetch(`/notifications/api/notifications/${notificationId}/read`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
     });
-    loadNotifications();
+    
+    const data = await response.json();
+    console.log('Mark as read response:', data);
+    
+    if (data.success) {
+      // Update UI immediately without reloading
+      const notificationElement = document.querySelector(`[data-notification-id="${notificationId}"]`);
+      if (notificationElement) {
+        notificationElement.classList.remove('unread');
+        notificationElement.classList.add('read');
+        
+        // Remove unread dot
+        const unreadDot = notificationElement.querySelector('.unread-dot');
+        if (unreadDot) {
+          unreadDot.remove();
+        }
+      }
+      
+      console.log('✅ Notification marked as read');
+    } else {
+      console.error('Failed to mark as read:', data.message);
+    }
   } catch (error) {
     console.error('Error marking as read:', error);
   }
 }
 
+// FIXED: Mark all as read
 async function markAllRead() {
-  // Implement mark all as read
-  alert('Mark all read - to be implemented');
+  try {
+    console.log('Marking all notifications as read');
+    
+    // Get all unread notification IDs
+    const unreadNotifications = document.querySelectorAll('.notification-item.unread');
+    
+    if (unreadNotifications.length === 0) {
+      alert('No unread notifications');
+      return;
+    }
+    
+    if (!confirm(`Mark ${unreadNotifications.length} notifications as read?`)) {
+      return;
+    }
+    
+    // Mark each as read
+    const promises = Array.from(unreadNotifications).map(item => {
+      const notificationId = item.getAttribute('data-notification-id');
+      return fetch(`/notifications/api/notifications/${notificationId}/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    });
+    
+    await Promise.all(promises);
+    
+    // Update UI
+    unreadNotifications.forEach(item => {
+      item.classList.remove('unread');
+      item.classList.add('read');
+      
+      const unreadDot = item.querySelector('.unread-dot');
+      if (unreadDot) {
+        unreadDot.remove();
+      }
+    });
+    
+    alert('✅ All notifications marked as read');
+    console.log('✅ All notifications marked as read');
+    
+  } catch (error) {
+    console.error('Error marking all as read:', error);
+    alert('Error marking all notifications as read');
+  }
 }
 
 function getNotificationIcon(type) {
@@ -146,7 +216,12 @@ function getNotificationIcon(type) {
     'payment_submitted': '💳',
     'payment_confirmed': '✅',
     'payment_rejected': '❌',
-    'purchase_complete': '🎉'
+    'purchase_complete': '🎉',
+    'offer_received': '💵',
+    'offer_accepted': '✔️',
+    'offer_declined': '❌',
+    'payment_requested': '💰',
+    'ownership_transferred': '🎁'
   };
   return icons[type] || '🔔';
 }
@@ -163,6 +238,13 @@ function getTimeAgo(date) {
 
 // Load on page load
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('Notifications page loaded');
   loadNotifications();
   loadPendingTransactions();
+  
+  // Refresh every 30 seconds
+  setInterval(() => {
+    loadNotifications();
+    loadPendingTransactions();
+  }, 30000);
 });
