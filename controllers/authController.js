@@ -13,18 +13,6 @@ const generateToken = (userId) => {
   });
 };
 
-// Helper function to set secure cookie
-const setTokenCookie = (res, token) => {
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Only HTTPS in production
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
-  };
-  
-  res.cookie('token', token, cookieOptions);
-};
-
 // Render login page
 exports.renderLogin = (req, res) => {
   const error = req.query.error || null;
@@ -36,12 +24,11 @@ exports.renderRegister = (req, res) => {
   res.render('register', { error: null });
 };
 
-// Register a user
+// Register a user - USES REGISTER-SUCCESS PAGE
 exports.registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
     
-    // Validate input
     if (!username || !email || !password) {
       return res.render('register', { error: 'All fields are required' });
     }
@@ -50,7 +37,6 @@ exports.registerUser = async (req, res) => {
       return res.render('register', { error: 'Password must be at least 6 characters long' });
     }
     
-    // Check if email or username already exists
     const existingUser = await User.findOne({ 
       $or: [{ email }, { username }] 
     });
@@ -63,52 +49,50 @@ exports.registerUser = async (req, res) => {
       }
     }
     
-    // REMOVED: Don't hash here - let the User model handle it
-    const newUser = new User({ 
-      username, 
-      email, 
-      password // ← Pass plain password, model will hash it
-    });
-    
+    const newUser = new User({ username, email, password });
     await newUser.save();
     
-    // Create JWT token
     const token = generateToken(newUser._id);
     
-    // Set secure cookie
-    setTokenCookie(res, token);
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/'
+    });
     
-    console.log(`New user registered: ${username} (${email})`);
-    res.redirect('/');
+    console.log(`✅ New user registered: ${username} (${email})`);
+    console.log(`🍪 Cookie set with token`);
+    
+    // Render REGISTER success page (celebration!)
+    res.render('register-success', { user: newUser });
+    
   } catch (err) {
     console.error('Registration error:', err);
     res.render('register', { error: 'Server error. Please try again later.' });
   }
 };
 
-// Login user
+// Login user - USES LOGIN-SUCCESS PAGE
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    // Validate input
     if (!email || !password) {
       return res.redirect('/login?error=' + encodeURIComponent('Email and password are required'));
     }
     
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.redirect('/login?error=' + encodeURIComponent('Invalid email or password'));
     }
     
-    // Check password (assuming you have password hashing in your User model)
     let isValidPassword;
     if (user.isPasswordMatch && typeof user.isPasswordMatch === 'function') {
-      // If you have a custom method in your User model
       isValidPassword = await user.isPasswordMatch(password);
     } else {
-      // Direct bcrypt comparison
       isValidPassword = await bcrypt.compare(password, user.password);
     }
     
@@ -116,26 +100,39 @@ exports.loginUser = async (req, res) => {
       return res.redirect('/login?error=' + encodeURIComponent('Invalid email or password'));
     }
     
-    // Create JWT token
     const token = generateToken(user._id);
     
-    // Set secure cookie
-    setTokenCookie(res, token);
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/'
+    });
     
-    console.log(`User logged in: ${user.username} (${user.email})`);
-    res.redirect('/');
+    console.log(`✅ User logged in: ${user.username} (${user.email})`);
+    console.log(`🍪 Cookie set with token`);
+    
+    // Render LOGIN success page (welcome back!)
+    res.render('login-success', { user: user });
+    
   } catch (err) {
     console.error('Login error:', err);
     res.redirect('/login?error=' + encodeURIComponent('Server error. Please try again later.'));
   }
 };
 
-// Logout user (clear cookie)
+
+// Logout user
 exports.logoutUser = (req, res) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  
   res.clearCookie('token', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
+    secure: isProduction,
+    sameSite: isProduction ? 'strict' : 'lax',
+    path: '/'
   });
   
   console.log('User logged out');
@@ -151,21 +148,19 @@ exports.authenticateToken = async (req, res, next) => {
       return res.redirect('/login?error=' + encodeURIComponent('Access denied. Please login.'));
     }
 
-    // Verify JWT token
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.userId).select('-password'); // Exclude password
+    const user = await User.findById(decoded.userId).select('-password');
     
     if (!user) {
-      res.clearCookie('token'); // Clear invalid token
+      res.clearCookie('token');
       return res.redirect('/login?error=' + encodeURIComponent('User not found. Please login again.'));
     }
 
-    // Add user to request object
     req.user = user;
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    res.clearCookie('token'); // Clear invalid token
+    res.clearCookie('token');
     
     if (error.name === 'TokenExpiredError') {
       return res.redirect('/login?error=' + encodeURIComponent('Session expired. Please login again.'));

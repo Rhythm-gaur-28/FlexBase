@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration Success - FlexBase</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+
+    .success-container {
+      text-align: center;
+      padding: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      max-width: 450px;
+      width: 90%;
+    }
+
+    .celebration {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 30px;
+      position: relative;
+      animation: bounce 1s ease infinite;
+    }
+
+    .celebration-emoji {
+      font-size: 80px;
+      animation: rotate 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    @keyframes rotate {
+      0%, 100% {
+        transform: rotate(-5deg);
+      }
+      50% {
+        transform: rotate(5deg);
+      }
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .welcome-text {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+
+    .sub-text {
+      font-size: 1rem;
+      opacity: 0.85;
+      margin-bottom: 25px;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid white;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto 0;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .redirect-text {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="success-container">
+    <div class="celebration">
+      <div class="celebration-emoji">🎉</div>
+    </div>
+    
+    <h1>Account Created!</h1>
+    <p class="welcome-text">
+      Welcome to FlexBase, <%= user.username %>!
+    </p>
+    <p class="sub-text">
+      Your account has been successfully created. Get ready to explore the sneaker community!
+    </p>
+    
+    <div class="spinner"></div>
+    <p class="redirect-text">Taking you to your new homepage...</p>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 1500);
+  </script>
+</body>
+</html>
