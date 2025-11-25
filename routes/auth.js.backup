@@ -27,3 +27,5 @@ app.get('/explore', authController.checkAuth, (req, res) => {
 
 // API endpoint to get current user
 app.get('/api/user', authController.authenticateToken, authController.getCurrentUser);
+
+
