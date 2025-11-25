@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registration Success - FlexBase</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Welcome to FlexBase! 🎉</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -18,115 +18,340 @@
       align-items: center;
       min-height: 100vh;
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      color: white;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      overflow: hidden;
+      position: relative;
     }
 
+    /* Animated Background Particles */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #f96c2b;
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+    .particle:nth-child(2) { left: 20%; animation-delay: 0.5s; }
+    .particle:nth-child(3) { left: 30%; animation-delay: 1s; }
+    .particle:nth-child(4) { left: 40%; animation-delay: 1.5s; }
+    .particle:nth-child(5) { left: 50%; animation-delay: 2s; }
+    .particle:nth-child(6) { left: 60%; animation-delay: 2.5s; }
+    .particle:nth-child(7) { left: 70%; animation-delay: 3s; }
+    .particle:nth-child(8) { left: 80%; animation-delay: 3.5s; }
+    .particle:nth-child(9) { left: 90%; animation-delay: 4s; }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(100vh) scale(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.6;
+      }
+      90% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translateY(-100px) scale(1);
+      }
+    }
+
+    /* Main Container */
     .success-container {
+      position: relative;
+      z-index: 2;
       text-align: center;
-      padding: 40px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      max-width: 450px;
+      padding: 60px 40px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
+                  0 0 0 1px rgba(255, 255, 255, 0.1);
+      max-width: 550px;
       width: 90%;
+      animation: slideUp 0.6s ease-out;
     }
 
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* FlexBase Logo/Brand */
+    .brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #f96c2b;
+      margin-bottom: 30px;
+      letter-spacing: 2px;
+    }
+
+    /* Celebration Animation */
     .celebration {
-      width: 100px;
-      height: 100px;
+      width: 120px;
+      height: 120px;
       margin: 0 auto 30px;
       position: relative;
-      animation: bounce 1s ease infinite;
+      animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.2) rotate(180deg);
+      }
+      100% {
+        transform: scale(1) rotate(360deg);
+        opacity: 1;
+      }
     }
 
     .celebration-emoji {
-      font-size: 80px;
-      animation: rotate 2s ease-in-out infinite;
+      font-size: 100px;
+      display: inline-block;
+      animation: bounce 2s ease-in-out infinite;
+      filter: drop-shadow(0 10px 20px rgba(249, 108, 43, 0.3));
     }
 
     @keyframes bounce {
       0%, 100% {
+        transform: translateY(0) rotate(-5deg);
+      }
+      50% {
+        transform: translateY(-30px) rotate(5deg);
+      }
+    }
+
+    /* Confetti Effect */
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #f96c2b;
+      position: absolute;
+      animation: confettiFall 3s ease-out infinite;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(600px) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* Text Styles */
+    h1 {
+      font-size: 2.8rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, #f96c2b 0%, #ff8f50 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeIn 0.8s ease-out 0.3s both;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
         transform: translateY(0);
       }
-      50% {
-        transform: translateY(-20px);
-      }
-    }
-
-    @keyframes rotate {
-      0%, 100% {
-        transform: rotate(-5deg);
-      }
-      50% {
-        transform: rotate(5deg);
-      }
-    }
-
-    h1 {
-      font-size: 2.2rem;
-      margin-bottom: 10px;
-      font-weight: 700;
     }
 
     .welcome-text {
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       margin-bottom: 15px;
-      opacity: 0.95;
-      font-weight: 500;
+      color: #f96c2b;
+      font-weight: 600;
+      animation: fadeIn 0.8s ease-out 0.5s both;
+    }
+
+    .username {
+      display: inline-block;
+      padding: 5px 15px;
+      background: rgba(249, 108, 43, 0.2);
+      border-radius: 20px;
+      color: #ff8f50;
+      font-weight: 700;
     }
 
     .sub-text {
-      font-size: 1rem;
-      opacity: 0.85;
-      margin-bottom: 25px;
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 40px;
+      line-height: 1.6;
+      animation: fadeIn 0.8s ease-out 0.7s both;
     }
 
-    .spinner {
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top: 3px solid white;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto 0;
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 30px;
     }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #f96c2b 0%, #ff8f50 100%);
+      border-radius: 10px;
+      animation: fillProgress 2s ease-out forwards;
+      box-shadow: 0 0 20px rgba(249, 108, 43, 0.6);
+    }
+
+    @keyframes fillProgress {
+      from {
+        width: 0%;
+      }
+      to {
+        width: 100%;
+      }
     }
 
     .redirect-text {
-      font-size: 0.9rem;
-      opacity: 0.8;
-      margin-top: 15px;
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 20px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.6;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    /* Sneaker Icon */
+    .sneaker-icon {
+      font-size: 40px;
+      margin-top: 20px;
+      display: inline-block;
+      animation: walkIn 2s ease-in-out infinite;
+    }
+
+    @keyframes walkIn {
+      0%, 100% {
+        transform: translateX(-10px) rotate(-5deg);
+      }
+      50% {
+        transform: translateX(10px) rotate(5deg);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .success-container {
+        padding: 40px 30px;
+      }
+      h1 {
+        font-size: 2.2rem;
+      }
+      .welcome-text {
+        font-size: 1.2rem;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Animated Background Particles -->
+  <div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
   <div class="success-container">
+    <div class="brand">FLEXBASE</div>
+    
     <div class="celebration">
       <div class="celebration-emoji">🎉</div>
     </div>
     
     <h1>Account Created!</h1>
+    
     <p class="welcome-text">
-      Welcome to FlexBase, <%= user.username %>!
-    </p>
-    <p class="sub-text">
-      Your account has been successfully created. Get ready to explore the sneaker community!
+      Welcome to the community, <span class="username"><%= user.username %></span>!
     </p>
     
-    <div class="spinner"></div>
-    <p class="redirect-text">Taking you to your new homepage...</p>
+    <p class="sub-text">
+      Your sneaker journey starts now. Get ready to explore, flex, and connect with fellow enthusiasts! 👟
+    </p>
+    
+    <div class="sneaker-icon">👟</div>
+    
+    <div class="progress-container">
+      <div class="progress-bar"></div>
+    </div>
+    
+    <p class="redirect-text">Taking you to your homepage...</p>
   </div>
 
   <script>
+    // Redirect after 2.5 seconds (gives time to read)
     setTimeout(() => {
       window.location.href = '/';
-    }, 1500);
+    }, 2500);
+
+    // Create random confetti
+    function createConfetti() {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = Math.random() * 100 + '%';
+      confetti.style.background = ['#f96c2b', '#ff8f50', '#ffa64d', '#fff'][Math.floor(Math.random() * 4)];
+      confetti.style.animationDelay = Math.random() * 3 + 's';
+      document.body.appendChild(confetti);
+      
+      setTimeout(() => confetti.remove(), 3000);
+    }
+
+    // Generate confetti
+    for (let i = 0; i < 50; i++) {
+      setTimeout(createConfetti, i * 50);
+    }
   </script>
 </body>
 </html>
