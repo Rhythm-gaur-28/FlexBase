@@ -1,6 +1,6 @@
 const redisClient = require('../redisClient');
 
-const cacheMiddleware = (keyPrefix, ttlSeconds = 60) => async (req, res, next) => {
+const cacheMiddleware = (keyPrefix, ttlSeconds = 360) => async (req, res, next) => {
   const key = keyPrefix + req.params.category;
 
   try {

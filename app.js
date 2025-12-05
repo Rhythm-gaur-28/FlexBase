@@ -201,6 +201,7 @@ io.on('connection', async (socket) => {
 
 // Routes
 const indexRoutes = require('./routes/index');
+app.use('/api', require('./routes/api/profile'))
 app.use('/', indexRoutes);
 
 // Error handling
