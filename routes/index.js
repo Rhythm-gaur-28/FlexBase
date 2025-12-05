@@ -1,4 +1,3 @@
-// routes/index.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -9,9 +8,10 @@ const User = require('../models/User');
 const Product = require('../models/Product');
 const Collection = require('../models/Collection');
 const Post = require('../models/Post');
+const Notification = require('../models/Notification');
 const authRequired = require('../middleware/authRequired');
 const authController = require('../controllers/authController');
-const cacheMiddleware = require('../middleware/cacheMiddleware'); // adjust path
+const cacheMiddleware = require('../middleware/cacheMiddleware');
 
 // Cloudinary + Multer storage
 const cloudinary = require('cloudinary').v2;
@@ -54,11 +54,68 @@ const uploadProfile = multer({ storage: profileStorage });
 const uploadCollection = multer({ storage: collectionStorage });
 const uploadPost = multer({ storage: postStorage });
 
+// ============= NOTIFICATION HELPER FUNCTION =============
+async function createNotification(recipientId, senderId, type, data, io) {
+  try {
+    // Don't notify yourself
+    if (String(recipientId) === String(senderId)) {
+      return;
+    }
+    
+    const messages = {
+      'follow': 'started following you',
+      'like': 'liked your post',
+      'comment': 'commented on your post',
+      'new_message': 'sent you a message'
+    };
+    
+    const notification = new Notification({
+      recipient: recipientId,
+      sender: senderId,
+      type: type,
+      message: messages[type] || 'New notification',
+      relatedPost: data?.postId,
+      relatedChat: data?.chatId,
+      data: {
+        postImage: data?.postImage,
+        commentText: data?.commentText,
+        chatPreview: data?.chatPreview
+      },
+      read: false
+    });
+    
+    await notification.save();
+    
+    // Send real-time notification
+    if (io) {
+      const populatedNotification = await Notification.findById(notification._id)
+        .populate('sender', 'username profileImage')
+        .populate('relatedPost', 'images')
+        .lean();
+      
+      io.to(`user_${recipientId}`).emit('newNotification', {
+        notification: populatedNotification
+      });
+    }
+    
+    console.log(`✅ Notification sent: ${type} to user ${recipientId}`);
+    
+  } catch (error) {
+    console.error('Error creating notification:', error);
+  }
+}
+// ============= END NOTIFICATION HELPER =============
+
+
 // Import chat routes
 const chatRoutes = require('./chat');
+// ADD THIS LINE - Import marketplace routes
+const marketplaceRoutes = require('./marketplace');
 
 // Mount chat routes under /api/chat
 router.use('/api/chat', chatRoutes);
+// ADD THIS LINE - Mount marketplace routes
+router.use('/marketplace', marketplaceRoutes);
 
 // Chat page route
 router.get('/chat', authRequired, async (req, res) => {
@@ -68,10 +125,12 @@ router.get('/chat', authRequired, async (req, res) => {
   });
 });
 
-// ---------- Home Page (Landing/Explore) ----------
 
+// ---------- Home Page (Landing/Explore) ----------
 router.get('/', async (req, res) => {
   console.log('📍 Hit / route inside index.js');
+  console.log('👤 User:', req.user ? req.user.username : 'No user logged in');
+  
   try {
     const category = req.query.category || 'new-arrivals';
     const row1Products = await Product.find({ section: 'row1', category });
@@ -84,12 +143,21 @@ router.get('/', async (req, res) => {
     };
 
     console.log('✅ Rendering index.ejs');
-    res.render('index', { row1Products, row2Products, row3Products, category, shoeOfDay });
+    res.render('index', { 
+      row1Products, 
+      row2Products, 
+      row3Products, 
+      category, 
+      shoeOfDay,
+      user: req.user // MAKE SURE THIS LINE IS HERE
+    });
   } catch (err) {
     console.error('❌ Error rendering / route:', err);
     res.status(500).send('Internal Server Error');
   }
 });
+
+
 router.get('/api/products/:category', cacheMiddleware('products:'), async (req, res) => {
   try {
     const category = req.params.category;
@@ -101,7 +169,6 @@ router.get('/api/products/:category', cacheMiddleware('products:'), async (req, 
     res.status(500).json({ error: 'Failed to fetch products' });
   }
 });
-
 
 // ---------- AUTH ----------
 // Display registration form
@@ -129,7 +196,6 @@ router.get('/collections/add', authRequired, (req, res) => {
 });
 
 router.post('/collections/add', authRequired, (req, res, next) => {
-  // Cloudinary-backed upload
   uploadCollection.array('images')(req, res, (err) => {
     if (err) {
       console.error("Multer upload error:", err);
@@ -139,19 +205,17 @@ router.post('/collections/add', authRequired, (req, res, next) => {
   });
 }, async (req, res) => {
   try {
-    // Normalize previous owners inputs to arrays even if only one owner is provided
     const toArray = v => Array.isArray(v) ? v : v ? [v] : [];
-    const pOwnerIds = toArray(req.body.prevOwnerIds); // Contains the usernames
+    const pOwnerIds = toArray(req.body.prevOwnerIds);
     const pFrom = toArray(req.body.prevFrom);
     const pTo = toArray(req.body.prevTo);
 
     const previousOwners = pOwnerIds.map((username, idx) => ({
-      user: username, // Store as a username string
+      user: username,
       from: pFrom[idx] || null,
       to: pTo[idx] || null
     }));
 
-    // Cloudinary returns file.path (public URL)
     const imagePaths = (req.files || []).map(file => file.path);
 
     const newCollection = new Collection({
@@ -206,7 +270,6 @@ router.post('/profile/update', authRequired, uploadProfile.single('profilePictur
       bio: req.body.bio
     };
     if (req.file) {
-      // Cloudinary public URL
       update.profileImage = req.file.path;
     }
     const user = await User.findByIdAndUpdate(req.user._id, update, { new: true });
@@ -224,12 +287,11 @@ router.get('/explore', authRequired, (req, res) => {
   res.render('explore', { user: req.user });
 });
 
-// Typeahead API: /api/users/search?q=<term>
 router.get('/api/users/search', authRequired, async (req, res) => {
   try {
     const q = (req.query.q || '').trim();
     if (!q) return res.json({ users: [] });
-    const regex = new RegExp('^' + escapeRegex(q), 'i'); // prefix match
+    const regex = new RegExp('^' + escapeRegex(q), 'i');
     const users = await User.find({ username: regex })
       .select('username profileImage')
       .limit(8)
@@ -241,7 +303,7 @@ router.get('/api/users/search', authRequired, async (req, res) => {
   }
 });
 
-// Example public profile by username
+// Public profile by username
 router.get('/u/:username', authRequired, async (req, res) => {
   const target = await User.findOne({ username: req.params.username }).lean();
   if (!target) return res.status(404).render('404');
@@ -284,6 +346,11 @@ router.post('/u/:username/follow', authRequired, async (req, res) => {
     req.user.following.push(target._id);
     await target.save();
     await req.user.save();
+
+    // ⭐ NEW - Send notification
+    const io = req.app.get('io');
+    await createNotification(target._id, req.user._id, 'follow', {}, io);
+
     res.json({ success: true });
   } catch (error) {
     console.error('Follow error:', error);
@@ -310,7 +377,6 @@ router.post('/u/:username/unfollow', authRequired, async (req, res) => {
   }
 });
 
-// Remove a follower (for your own profile)
 router.post('/profile/remove-follower', authRequired, async (req, res) => {
   try {
     const { username } = req.body;
@@ -319,9 +385,7 @@ router.post('/profile/remove-follower', authRequired, async (req, res) => {
     const followerUser = await User.findOne({ username });
     if (!followerUser) return res.status(404).json({ success: false, message: 'User not found' });
 
-    // Remove from your followers list
     req.user.followers = req.user.followers.filter(fid => String(fid) !== String(followerUser._id));
-    // Remove from their following list
     followerUser.following = followerUser.following.filter(fid => String(fid) !== String(req.user._id));
 
     await req.user.save();
@@ -334,7 +398,6 @@ router.post('/profile/remove-follower', authRequired, async (req, res) => {
   }
 });
 
-// Unfollow a user from your following list
 router.post('/profile/unfollow-user', authRequired, async (req, res) => {
   try {
     const { username } = req.body;
@@ -343,9 +406,7 @@ router.post('/profile/unfollow-user', authRequired, async (req, res) => {
     const targetUser = await User.findOne({ username });
     if (!targetUser) return res.status(404).json({ success: false, message: 'User not found' });
 
-    // Remove from your following list
     req.user.following = req.user.following.filter(fid => String(fid) !== String(targetUser._id));
-    // Remove from their followers list
     targetUser.followers = targetUser.followers.filter(fid => String(fid) !== String(req.user._id));
 
     await req.user.save();
@@ -358,7 +419,7 @@ router.post('/profile/unfollow-user', authRequired, async (req, res) => {
   }
 });
 
-// Add post storage configuration (Cloudinary-backed)
+// Add post
 router.get('/posts/add', authRequired, (req, res) => {
   res.render('addPost');
 });
@@ -377,9 +438,7 @@ router.post('/posts/add', authRequired, (req, res, next) => {
       return res.status(400).json({ success: false, message: 'At least one image is required.' });
     }
 
-    const imagePaths = req.files.map(file => file.path); // Cloudinary URLs
-
-    // Process hashtags
+    const imagePaths = req.files.map(file => file.path);
     const hashtags = req.body.hashtags ?
       (Array.isArray(req.body.hashtags) ? req.body.hashtags : [req.body.hashtags]) : [];
 
@@ -398,7 +457,7 @@ router.post('/posts/add', authRequired, (req, res, next) => {
   }
 });
 
-// Get single post with full data
+// Post interactions
 router.get('/api/posts/:postId', authRequired, async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId)
@@ -410,7 +469,6 @@ router.get('/api/posts/:postId', authRequired, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
 
-    // Check if current user liked this post
     const isLiked = post.likes.some(like => String(like) === String(req.user._id));
     
     res.json({ 
@@ -428,10 +486,9 @@ router.get('/api/posts/:postId', authRequired, async (req, res) => {
   }
 });
 
-// Toggle like on post
 router.post('/api/posts/:postId/like', authRequired, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId).populate('user', '_id');
     if (!post) {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
@@ -440,13 +497,18 @@ router.post('/api/posts/:postId/like', authRequired, async (req, res) => {
     let isLiked;
 
     if (userLikeIndex > -1) {
-      // Unlike
       post.likes.splice(userLikeIndex, 1);
       isLiked = false;
     } else {
-      // Like
       post.likes.push(req.user._id);
       isLiked = true;
+      
+      // ⭐ NEW - Send notification when liking
+      const io = req.app.get('io');
+      await createNotification(post.user._id, req.user._id, 'like', {
+        postId: post._id,
+        postImage: post.images[0]
+      }, io);
     }
 
     await post.save();
@@ -455,13 +517,13 @@ router.post('/api/posts/:postId/like', authRequired, async (req, res) => {
       isLiked, 
       likesCount: post.likes.length 
     });
+
   } catch (error) {
     console.error('Toggle like error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
-// Add comment to post
 router.post('/api/posts/:postId/comment', authRequired, async (req, res) => {
   try {
     const { text } = req.body;
@@ -469,7 +531,7 @@ router.post('/api/posts/:postId/comment', authRequired, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Comment text required' });
     }
 
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId).populate('user', '_id');
     if (!post) {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
@@ -483,12 +545,19 @@ router.post('/api/posts/:postId/comment', authRequired, async (req, res) => {
     post.comments.push(newComment);
     await post.save();
 
-    // Get the populated comment data
     const populatedPost = await Post.findById(req.params.postId)
       .populate('comments.user', 'username profileImage')
       .lean();
 
     const addedComment = populatedPost.comments[populatedPost.comments.length - 1];
+
+    // ⭐ NEW - Send notification
+    const io = req.app.get('io');
+    await createNotification(post.user._id, req.user._id, 'comment', {
+      postId: post._id,
+      commentText: text.trim().substring(0, 50),
+      postImage: post.images[0]
+    }, io);
 
     res.json({ 
       success: true, 
@@ -501,7 +570,6 @@ router.post('/api/posts/:postId/comment', authRequired, async (req, res) => {
   }
 });
 
-// Delete comment from post (Updated with Instagram-like logic)
 router.delete('/api/posts/:postId/comment/:commentId', authRequired, async (req, res) => {
   try {
     const { postId, commentId } = req.params;
@@ -511,13 +579,11 @@ router.delete('/api/posts/:postId/comment/:commentId', authRequired, async (req,
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
 
-    // Find the comment
     const comment = post.comments.id(commentId);
     if (!comment) {
       return res.status(404).json({ success: false, message: 'Comment not found' });
     }
 
-    // Instagram-like logic: Allow deletion if user owns comment OR owns the post
     const isCommentOwner = String(comment.user) === String(req.user._id);
     const isPostOwner = String(post.user._id) === String(req.user._id);
     
@@ -525,7 +591,6 @@ router.delete('/api/posts/:postId/comment/:commentId', authRequired, async (req,
       return res.status(403).json({ success: false, message: 'Not authorized to delete this comment' });
     }
 
-    // Remove the comment
     post.comments.pull(commentId);
     await post.save();
 
@@ -539,12 +604,11 @@ router.delete('/api/posts/:postId/comment/:commentId', authRequired, async (req,
   }
 });
 
-// Newsletter subscription endpoint
+// Newsletter subscription
 router.post('/api/newsletter/subscribe', async (req, res) => {
   try {
     const { email } = req.body;
     
-    // Validate email
     if (!email || !email.includes('@')) {
       return res.status(400).json({
         success: false,

@@ -204,6 +204,11 @@ const indexRoutes = require('./routes/index');
 app.use('/api', require('./routes/api/profile'))
 app.use('/', indexRoutes);
 
+const notificationRoutes = require('./routes/notifications');
+app.use('/notifications', notificationRoutes);
+
+
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error('Application error:', err);
@@ -218,6 +223,6 @@ app.use((req, res) => {
 // Start server
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 FlexBase server running on port ${PORT}`);
+  console.log(`🚀 FlexBase server running on port ${PORT} http://localhost:${PORT}`);
   console.log(`🔌 Socket.IO server ready for connections`);
 });

@@ -80,14 +80,15 @@
                         </form>
                         <% } %>
 
-                            <!-- Edit Profile Button - appears only for own profile -->
-                            <% if (isSelf) { %>
-                                <button class="edit-profile-btn">Edit Profile</button>
-                                <% } %>
+                        <!-- Edit Profile Button - appears only for own profile -->
+                        <% if (isSelf) { %>
+                            <button class="edit-profile-btn">Edit Profile</button>
+                            <% } %>
                 </aside>
 
                 <!-- Main Content Area -->
                 <section class="profile-main-content">
+                    <!-- FOLLOWERS TAB -->
                     <div class="profile-tab-pane active" data-tab="followers">
                         <div class="profile-tab-title">
                             Followers
@@ -122,6 +123,7 @@
                                 <% } %>
                     </div>
 
+                    <!-- FOLLOWING TAB -->
                     <div class="profile-tab-pane" data-tab="following">
                         <div class="profile-tab-title">
                             Following
@@ -157,6 +159,7 @@
                                 <% } %>
                     </div>
 
+                    <!-- POSTS TAB -->
                     <div class="profile-tab-pane" data-tab="posts">
                         <div class="profile-tab-title">
                             Posts
@@ -201,6 +204,7 @@
                                 <% } %>
                     </div>
 
+                    <!-- COLLECTIONS TAB WITH MARKETPLACE INTEGRATION -->
                     <div class="profile-tab-pane" data-tab="collections">
                         <div class="profile-tab-title">
                             Collections
@@ -214,7 +218,7 @@
                         <% if (collections && collections.length> 0) { %>
                             <div class="collection-grid">
                                 <% collections.forEach(function(coll, idx) { %>
-                                    <div class="collection-card" data-index="<%= idx %>">
+                                    <div class="collection-card" data-index="<%= idx %>" data-collection-id="<%= coll._id %>">
                                         <div class="collection-img-wrap">
                                             <img src="<%= coll.images[0] %>" alt="<%= coll.brand %> shoe" />
                                             <% if (coll.images.length> 1) { %>
@@ -225,21 +229,41 @@
                                                             d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
                                                     </svg>
                                                 </span>
-                                                <% } %>
+                                            <% } %>
+                                            
+                                            <!-- LISTING BADGE -->
+                                            <% if (coll.isListed) { %>
+                                                <span class="listing-badge">Listed for Sale</span>
+                                            <% } %>
                                         </div>
                                         <div class="collection-brand">
                                             <%= coll.brand %>
                                         </div>
                                         <div class="collection-market-price">$<%= coll.marketPrice %>
                                         </div>
+                                        
+                                        <!-- SELL BUTTON (only show if viewing own profile and not listed) -->
+                                        <% if (isSelf && !coll.isListed) { %>
+                                            <button class="btn-sell-collection" onclick="sellCollection('<%= coll._id %>')">
+                                                💰 Sell This
+                                            </button>
+                                        <% } %>
+                                        
+                                        <!-- CANCEL LISTING BUTTON (only show if viewing own profile and is listed) -->
+                                        <% if (isSelf && coll.isListed) { %>
+                                            <button class="btn-cancel-listing" onclick="cancelListing('<%= coll._id %>', '<%= coll.currentListing %>')">
+                                                ❌ Cancel Listing
+                                            </button>
+                                        <% } %>
                                     </div>
-                                    <% }) %>
+                                <% }) %>
                             </div>
                             <% } else { %>
                                 <div class="profile-tab-placeholder">No shoes in your collection yet.</div>
                                 <% } %>
                     </div>
 
+                    <!-- SAVED TAB -->
                     <% if (isSelf) { %>
                         <div class="profile-tab-pane" data-tab="saved">
                             <div class="profile-tab-title">Saved</div>
@@ -249,7 +273,7 @@
                 </section>
             </div>
 
-            <!-- Collection Modal (moved outside main content) -->
+           <!-- Collection Modal-->
             <div id="collectionModal" class="collection-modal">
                 <div class="collection-modal-content">
                     <span id="closeModalBtn" class="close-modal">&times;</span>
@@ -273,7 +297,7 @@
                 </div>
             </div>
 
-            <!-- Post Modal (moved outside main content) -->
+            <!-- Post Modal -->
             <div id="postModal" class="post-modal">
                 <div class="post-modal-content">
                     <span id="closePostModalBtn" class="close-modal">&times;</span>
@@ -312,15 +336,18 @@
                             <!-- Post Actions -->
                             <div class="post-actions">
                                 <button class="post-action-btn like-btn" id="likeBtn">
-                                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
                                         <path
                                             d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                     </svg>
                                     <span class="likes-count">0</span>
                                 </button>
                                 <button class="post-action-btn comment-btn" id="commentToggle">
-                                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" />
+                                    <svg width="24" height="24" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" />
                                     </svg>
                                     <span class="comments-count">0</span>
                                 </button>
@@ -350,6 +377,65 @@
                     </div>
                 </div>
             </div>
+
+           <!-- Sell Collection Modal with Payment Methods -->
+<div id="sellModal" class="sell-modal">
+    <div class="sell-modal-content">
+        <h2>List Collection for Sale</h2>
+        <form id="sellForm">
+            <input type="hidden" id="sellCollectionId" />
+            
+            <div class="sell-form-group">
+                <label for="sellTitle">Listing Title *</label>
+                <input type="text" id="sellTitle" placeholder="e.g., Nike Air Jordan 1 Retro High" required />
+            </div>
+            
+            <div class="sell-form-group">
+                <label for="sellPrice">Price ($) *</label>
+                <input type="number" id="sellPrice" placeholder="e.g., 350" step="0.01" min="0" required />
+            </div>
+            
+            <div class="sell-form-group">
+                <label for="sellDescription">Description</label>
+                <textarea id="sellDescription" placeholder="Describe the condition, size, or any other details..."></textarea>
+            </div>
+            
+            <!-- PAYMENT METHODS SECTION - NEW -->
+            <div class="sell-form-group">
+                <label>Payment Methods * (Add at least one)</label>
+                <div id="paymentMethodsContainer">
+                    <!-- Payment methods will be added here -->
+                </div>
+                <button type="button" class="btn-add-payment" onclick="addPaymentMethod()">+ Add Payment Method</button>
+            </div>
+            
+            <div class="sell-form-buttons">
+                <button type="button" class="btn-cancel-modal" onclick="closeSellModal()">Cancel</button>
+                <button type="submit" class="btn-submit-listing">List for Sale</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Payment Method Template (Hidden) -->
+<template id="paymentMethodTemplate">
+    <div class="payment-method-item">
+        <select class="payment-type" required>
+            <option value="">Select Payment Type</option>
+            <option value="UPI">UPI (PhonePe, GPay, Paytm)</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="PayPal">PayPal</option>
+            <option value="Cash">Cash on Delivery</option>
+            <option value="Other">Other</option>
+        </select>
+        <input type="text" class="payment-details" placeholder="e.g., yourname@upi or Account: 123456789" required />
+        <input type="text" class="payment-name" placeholder="Account holder name (optional)" />
+        <button type="button" class="btn-remove-payment" onclick="removePaymentMethod(this)">×</button>
+    </div>
+</template>
+
+
+
 
             <% if (isSelf) { %>
                 <!-- Edit Profile Modal -->
@@ -387,106 +473,268 @@
                 </div>
                 <% } %>
 
-                    <!-- Delete Comment Confirmation Dialog -->
-                    <div id="confirmDeleteComment" class="modal">
-                        <div class="modal-content">
-                            <p>Are you sure you want to delete this comment?</p>
-                            <button id="confirmDeleteYes" class="btn btn-danger">Delete</button>
-                            <button id="confirmDeleteNo" class="btn">Cancel</button>
-                        </div>
+                <!-- Delete Comment Confirmation Dialog -->
+                <div id="confirmDeleteComment" class="modal">
+                    <div class="modal-content">
+                        <p>Are you sure you want to delete this comment?</p>
+                        <button id="confirmDeleteYes" class="btn btn-danger">Delete</button>
+                        <button id="confirmDeleteNo" class="btn">Cancel</button>
                     </div>
+                </div>
 
-                    <!-- Notification Toast -->
-                    <div id="toast" class="toast"></div>
+                <!-- Notification Toast -->
+                <div id="toast" class="toast"></div>
 
-                    <!-- FIXED SCRIPT TAGS -->
-                    <script>
-                        // Check if collections exist and handle potential JSON issues
-                        let allCollections = [];
-                        let allPosts = [];
-
-                        try {
+                <!-- Data Initialization Script -->
+                <script>
+                    // Initialize data
+                    let allCollections = [];
+                    let allPosts = [];
+                    
+                    try {
                         <% if (typeof collections !== 'undefined' && collections) { %>
-                                allCollections = <% - JSON.stringify(collections) %>;
+                            allCollections = <%- JSON.stringify(collections) %>;
                         <% } %>
                         
                         <% if (typeof posts !== 'undefined' && posts) { %>
-                                allPosts = <% - JSON.stringify(posts) %>;
+                            allPosts = <%- JSON.stringify(posts) %>;
                         <% } %>
+                        
+                        window.viewingSelf = <%- JSON.stringify(isSelf) %>;
+                        
+                        window.loggedInUser = {
+                            username: '<%= user.username %>',
+                            profileImage: '<%= user.profileImage || "/images/default-profile.jpg" %>'
+                        };
+                        
+                        console.log('Collections loaded:', allCollections.length);
+                        console.log('Posts loaded:', allPosts.length);
+                        console.log('Viewing self:', window.viewingSelf);
+                        
+                    } catch (error) {
+                        console.error('Error parsing data:', error);
+                        allCollections = [];
+                        allPosts = [];
+                        window.viewingSelf = false;
+                    }
+                </script>
 
-                                window.viewingSelf = <% - JSON.stringify(isSelf) %>;
+                <!-- Marketplace Functions Script -->
+                   <!-- Marketplace Functions Script -->
+<script>
+// Payment Methods Management
+let isSubmitting = false; // Prevent double submission
 
-                            // Add the logged-in user info
-                            window.loggedInUser = {
-                                username: '<%= user.username %>',
-                                profileImage: '<%= user.profileImage || "/images/default-profile.jpg" %>'
-                            };
+function addPaymentMethod() {
+    const template = document.getElementById('paymentMethodTemplate');
+    const container = document.getElementById('paymentMethodsContainer');
+    
+    if (!template || !container) {
+        console.error('Payment method template or container not found');
+        return;
+    }
+    
+    const clone = template.content.cloneNode(true);
+    container.appendChild(clone);
+    
+    console.log('Payment method added');
+}
 
-                            // Debug logs
-                            console.log('Collections loaded:', allCollections.length);
-                            console.log('Posts loaded:', allPosts.length);
-                            console.log('Viewing self:', window.viewingSelf);
-                            console.log('Logged in user:', window.loggedInUser);
+function removePaymentMethod(button) {
+    const methodItem = button.closest('.payment-method-item');
+    if (methodItem) {
+        methodItem.remove();
+    }
+}
 
-                        } catch (error) {
-                            console.error('Error parsing data:', error);
-                            allCollections = [];
-                            allPosts = [];
-                            window.viewingSelf = false;
-                        }
-                        async function loadProfileCache() {
-                            const CACHE_KEY = "profileData";
+function collectPaymentMethods() {
+    const container = document.getElementById('paymentMethodsContainer');
+    const methods = [];
+    
+    if (!container) return methods;
+    
+    const methodItems = container.querySelectorAll('.payment-method-item');
+    
+    methodItems.forEach(item => {
+        const type = item.querySelector('.payment-type')?.value;
+        const details = item.querySelector('.payment-details')?.value;
+        const name = item.querySelector('.payment-name')?.value;
+        
+        if (type && details) {
+            methods.push({
+                type: type,
+                details: details,
+                name: name || ''
+            });
+        }
+    });
+    
+    return methods;
+}
 
-                            // 1. If cached, apply immediately
-                            const cached = localStorage.getItem(CACHE_KEY);
-                            if (cached) {
-                                console.log("🔥 Loaded profile from cache");
-                                applyProfile(JSON.parse(cached));
-                            }
+// Open sell modal and add initial payment method
+function sellCollection(collectionId) {
+    document.getElementById('sellCollectionId').value = collectionId;
+    
+    // Clear previous payment methods
+    const container = document.getElementById('paymentMethodsContainer');
+    if (container) {
+        container.innerHTML = '';
+    }
+    
+    // Add one payment method by default
+    addPaymentMethod();
+    
+    document.getElementById('sellModal').style.display = 'flex';
+    console.log('Sell modal opened for collection:', collectionId);
+}
 
-                            try {
-                                // 2. Fetch fresh data from server
-                                const res = await fetch("/api/profile");
-                                const data = await res.json();
+function closeSellModal() {
+    document.getElementById('sellModal').style.display = 'none';
+    document.getElementById('sellForm').reset();
+    
+    // Clear payment methods
+    const container = document.getElementById('paymentMethodsContainer');
+    if (container) {
+        container.innerHTML = '';
+    }
+    
+    // Reset submission flag
+    isSubmitting = false;
+    
+    console.log('Sell modal closed and reset');
+}
 
-                                // 3. Save to localStorage
-                                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-                                console.log("💾 Cache updated with fresh data");
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('sellModal');
+    if (event.target === modal) {
+        closeSellModal();
+    }
+});
 
-                                // 4. Update UI again with latest data
-                                applyProfile(data);
+// Handle Sell Form Submission - SINGLE EVENT LISTENER ONLY
+document.getElementById('sellForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Prevent double submission
+    if (isSubmitting) {
+        console.log('Form already submitting, ignoring...');
+        return;
+    }
+    
+    const collectionId = document.getElementById('sellCollectionId').value;
+    const title = document.getElementById('sellTitle').value.trim();
+    const price = parseFloat(document.getElementById('sellPrice').value);
+    const description = document.getElementById('sellDescription').value.trim();
+    
+    // Collect payment methods
+    const paymentMethods = collectPaymentMethods();
+    
+    // Validation
+    if (!title || !price || price <= 0) {
+        showToast('Please fill in all required fields', 'error');
+        return;
+    }
+    
+    if (paymentMethods.length === 0) {
+        showToast('Please add at least one payment method', 'error');
+        return;
+    }
+    
+    console.log('Submitting listing with payment methods:', paymentMethods);
+    
+    // Set submitting flag
+    isSubmitting = true;
+    const submitBtn = this.querySelector('.btn-submit-listing');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Listing...';
+    
+    try {
+        const response = await fetch('/marketplace/api/listings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                collectionId,
+                title,
+                price,
+                description,
+                paymentMethods
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('✅ Collection listed successfully!', 'success');
+            closeSellModal();
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showToast(data.message || 'Failed to list collection', 'error');
+            // Reset button
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    } catch (error) {
+        console.error('Sell collection error:', error);
+        showToast('Failed to list collection. Please try again.', 'error');
+        // Reset button
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+});
 
-                            } catch (err) {
-                                console.error("Error fetching profile data:", err);
-                            }
-                        }
+// Cancel Listing Function
+async function cancelListing(collectionId, listingId) {
+    if (!confirm('Are you sure you want to cancel this listing?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/marketplace/api/listings/${listingId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('Listing cancelled successfully', 'success');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showToast(data.message || 'Failed to cancel listing', 'error');
+        }
+    } catch (error) {
+        console.error('Cancel listing error:', error);
+        showToast('Failed to cancel listing. Please try again.', 'error');
+    }
+}
 
-                        // Apply cached or fresh data to DOM
-                        function applyProfile(data) {
-                            // Followers count
-                            document.querySelector("[data-tab='followers'] .profile-count")
-                                .innerText = data.followers.length;
+// Toast notification function
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast show ${type}`;
+    
+    setTimeout(() => {
+        toast.className = 'toast';
+    }, 3000);
+}
+</script>
 
-                            // Following count
-                            document.querySelector("[data-tab='following'] .profile-count")
-                                .innerText = data.following.length;
-
-                            // Posts count
-                            document.querySelector("[data-tab='posts'] .profile-count")
-                                .innerText = data.posts.length;
-
-                            // Collections count
-                            document.querySelector("[data-tab='collections'] .profile-count")
-                                .innerText = data.collections.length;
-
-                            // You can also update list sections if needed
-                            // Example: replace followers DOM (optional)
-                        }
-
-                        // Run at page load
-                        loadProfileCache();
-                    </script>
-                    <script src="/js/profile.js"></script>
+<!-- Main Profile Script -->
+<script src="/js/profile.js"></script>
 </body>
 
 </html>
+
+
+               

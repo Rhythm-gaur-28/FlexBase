@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome Back! - FlexBase</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated Grid Background */
+    .grid-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(249, 108, 43, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(249, 108, 43, 0.1) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: gridMove 20s linear infinite;
+      z-index: 1;
+    }
+
+    @keyframes gridMove {
+      0% {
+        transform: translate(0, 0);
+      }
+      100% {
+        transform: translate(50px, 50px);
+      }
+    }
+
+    /* Main Container */
+    .success-container {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 60px 50px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
+                  0 0 0 1px rgba(255, 255, 255, 0.1);
+      max-width: 500px;
+      width: 90%;
+      animation: zoomIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* FlexBase Brand */
+    .brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #f96c2b;
+      margin-bottom: 30px;
+      letter-spacing: 2px;
+    }
+
+    /* Checkmark Animation */
+    .checkmark-container {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 30px;
+      position: relative;
+      animation: scaleIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes scaleIn {
+      0% {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.2) rotate(0deg);
+      }
+      100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+
+    .checkmark {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f96c2b 0%, #ff8f50 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 40px rgba(249, 108, 43, 0.4);
+      position: relative;
+    }
+
+    .checkmark::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: inherit;
+      animation: ripple 1.5s ease-out infinite;
+    }
+
+    @keyframes ripple {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    .checkmark svg {
+      width: 60px;
+      height: 60px;
+      stroke: white;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      animation: drawCheck 0.8s ease-out 0.4s forwards;
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+    }
+
+    @keyframes drawCheck {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    /* Text Styles */
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+      color: white;
+      animation: fadeSlideUp 0.6s ease-out 0.6s both;
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .welcome-text {
+      font-size: 1.3rem;
+      color: #f96c2b;
+      font-weight: 600;
+      margin-bottom: 30px;
+      animation: fadeSlideUp 0.6s ease-out 0.8s both;
+    }
+
+    .username {
+      display: inline-block;
+      padding: 5px 15px;
+      background: rgba(249, 108, 43, 0.2);
+      border-radius: 20px;
+      color: #ff8f50;
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+
+    /* Loading Dots */
+    .loading-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 30px 0 20px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #f96c2b;
+      animation: dotPulse 1.4s ease-in-out infinite;
+    }
+
+    .dot:nth-child(1) { animation-delay: 0s; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dotPulse {
+      0%, 80%, 100% {
+        transform: scale(0);
+        opacity: 0.5;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .redirect-text {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.6);
+      animation: fadeSlideUp 0.6s ease-out 1s both;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .success-container {
+        padding: 40px 30px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-background"></div>
+
+  <div class="success-container">
+    <div class="brand">FLEXBASE</div>
+    
+    <div class="checkmark-container">
+      <div class="checkmark">
+        <svg viewBox="0 0 52 52">
+          <path d="M14 27l7 7 16-16"/>
+        </svg>
+      </div>
+    </div>
+    
+    <h1>Welcome Back!</h1>
+    
+    <p class="welcome-text">
+      <span class="username"><%= user.username %></span>
+    </p>
+    
+    <div class="loading-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    
+    <p class="redirect-text">Redirecting to your homepage...</p>
+  </div>
+
+  <script>
+    // Redirect after 2 seconds
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 2000);
+  </script>
+</body>
+</html>

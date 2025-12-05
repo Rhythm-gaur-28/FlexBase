@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications | FlexBase</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/notification.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  
+  <div class="notifications-container">
+    <div class="notifications-header">
+      <h1>Notifications</h1>
+      <button onclick="markAllRead()" class="btn-mark-all-read">Mark All Read</button>
+    </div>
+    
+    <!-- Pending Transactions Section -->
+    <div id="pendingTransactionsSection" class="pending-section">
+      <h2>⏳ Pending Payment Confirmations</h2>
+      <div id="pendingTransactions" class="pending-list">
+        <p class="loading">Loading...</p>
+      </div>
+    </div>
+    
+    <!-- Notifications List -->
+    <div id="notificationsList" class="notifications-list">
+      <p class="loading">Loading notifications...</p>
+    </div>
+  </div>
+
+  <script src="/js/notifications.js"></script>
+</body>
+</html>

@@ -5,12 +5,13 @@ body {
 .profile-dashboard-container {
   display: flex;
   gap: 0;
-  min-height: 100vh;
+  height: calc(100vh - 60px); /* Full viewport height minus navbar */
   margin-top: 60px;
-  /* remove if navbar margin needed */
   font-family: 'Poppins', 'Segoe UI', 'Cormorant Garamond', Arial, sans-serif;
+  overflow: hidden; /* Prevent overall scrolling */
 }
 
+/* Profile Sidebar - FIXED */
 .profile-sidebar {
   background: #ababab;
   min-width: 270px;
@@ -18,11 +19,12 @@ body {
   color: #fff;
   display: flex;
   flex-direction: column;
-  align-items: center;
   padding: 28px 0 16px 0;
   border-radius: 40px 0 0 40px;
   box-shadow: 0 6px 34px 0 rgba(81, 72, 167, 0.10);
   position: relative;
+  height: 100%; /* Fill container height */
+  overflow-y: auto; /* Allow sidebar to scroll if needed */
 }
 
 .profile-pic-username {
@@ -30,12 +32,13 @@ body {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin-bottom: 32px;
+  margin-bottom: 20px; /* Reduced from 32px */
+  flex-shrink: 0; /* Don't shrink */
 }
 
 .profile-avatar-big {
-  width: 94px;
-  height: 94px;
+  width: 80px; /* Reduced from 94px */
+  height: 80px; /* Reduced from 94px */
   object-fit: cover;
   border-radius: 50%;
   background: #fff;
@@ -44,31 +47,34 @@ body {
 }
 
 .profile-username-big {
-  font-size: 1.6rem;
+  font-size: 1.4rem; /* Reduced from 1.6rem */
   font-weight: 800;
   color: #000000;
-  margin: 12px 0 3px 0;
+  margin: 10px 0 3px 0; /* Reduced from 12px */
   text-align: center;
   font-family: 'Cormorant Garamond', serif;
 }
 
 .profile-about {
-  font-size: 1.3rem;
+  font-size: 1.1rem; /* Reduced from 1.3rem */
   font-weight: 500;
   color: #000000;
-  padding: 0px 20px;
+  padding: 0px 15px; /* Reduced from 20px */
   text-align: center;
   font-family: 'Cormorant Garamond', serif;
-  margin-top: 7px;
-  min-height: 42px;
+  margin-top: 5px; /* Reduced from 7px */
+  min-height: 40px; /* Reduced from 42px */
+  max-height: 60px; /* Added limit */
+  overflow-y: auto; /* Scroll if too long */
 }
 
 .profile-side-nav {
   display: flex;
   flex-direction: column;
   width: 90%;
-  margin: 0 auto 24px auto;
-  gap: 10px;
+  margin: 0 auto 16px auto; /* Reduced from 24px */
+  gap: 8px; /* Reduced from 10px */
+  flex-shrink: 0; /* Don't shrink */
 }
 
 .side-nav-btn {
@@ -77,22 +83,23 @@ body {
   outline: none;
   color: #000000;
   font-weight: 500;
-  font-size: 1.3rem;
+  font-size: 1.2rem; /* Reduced from 1.3rem */
   font-family: 'Cormorant Garamond', serif;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 9px 10px;
+  gap: 12px; /* Reduced from 16px */
+  padding: 8px 10px; /* Reduced from 9px */
   margin: 1px 0;
   letter-spacing: 0.03em;
   cursor: pointer;
   transition: background 0.17s;
   position: relative;
+  border-radius: 6px; /* Added for better look */
 }
 
 .side-nav-btn.active,
 .side-nav-btn:hover {
-  background: rgba(0, 0, 0, );
+  background: rgba(0, 0, 0, 0.2); /* Fixed - was missing value */
   color: #f6f7fb;
 }
 
@@ -107,44 +114,56 @@ body {
   stroke: #f96c2b;
 }
 
+/* Edit Profile Button - FIXED AND CENTERED */
 .edit-profile-btn {
-  margin-top: auto;
+  margin-top: auto; /* Push to bottom */
   background: #fff;
   color: #000000;
   font-weight: 600;
-  padding: 11px 34px;
+  padding: 12px 32px;
   border: none;
-  /* border-radius: 12px; */
-  font-size: 1.09rem;
+  border-radius: 8px; /* Add rounded corners */
+  font-size: 1.05rem;
   cursor: pointer;
   font-family: 'Cormorant Garamond', serif;
-  transition: background 0.18s, color 0.18s;
-  box-shadow: 0 0.5px 8px rgba(81, 72, 167, 0.09);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(81, 72, 167, 0.15);
+  margin-bottom: 20px; /* More bottom spacing */
+  margin-left: 5%; /* Center it */
+  margin-right: 5%;
+  width: 90%; /* Full width with padding */
+  flex-shrink: 0; /* Don't shrink */
+  text-align: center;
 }
 
 .edit-profile-btn:hover {
   background: #f96c2b;
   color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(249, 108, 43, 0.3);
 }
 
-/* Main Panel */
+
+/* Main Panel - SCROLLABLE */
 .profile-main-content {
   background: #fff;
   flex: 1 1 0%;
   min-width: 0;
   border-radius: 0 18px 18px 0;
-  /* margin: 18px 0 18px 0; */
-  padding: 36px 34px 34px 34px;
+  padding: 30px 28px; /* Reduced from 36px 34px */
   box-shadow: 0 6px 34px 0 rgba(81, 72, 167, 0.11);
   display: flex;
   flex-direction: column;
+  height: 100%; /* Fill container */
+  overflow-y: auto; /* Allow scrolling */
 }
 
 .profile-tab-pane {
   display: none;
   width: 100%;
-  min-height: 380px;
+  height: 100%; /* Fill available space */
   animation: fadeInP 0.7s;
+  overflow-y: auto; /* Allow tab scrolling */
 }
 
 .profile-count {
@@ -161,7 +180,8 @@ body {
 }
 
 .profile-tab-pane.active {
-  display: block;
+  display: flex; /* Changed from block */
+  flex-direction: column;
 }
 
 @keyframes fadeInP {
@@ -169,7 +189,6 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -177,12 +196,13 @@ body {
 }
 
 .profile-tab-title {
-  font-size: 1.7rem;
+  font-size: 1.6rem; /* Slightly reduced from 1.7rem */
   font-weight: 700;
   font-family: 'Cormorant Garamond', serif;
   color: #232323;
-  margin-bottom: 18px;
+  margin-bottom: 16px; /* Reduced from 18px */
   letter-spacing: .01em;
+  flex-shrink: 0; /* Don't shrink title */
 }
 
 .profile-tab-placeholder {
@@ -198,6 +218,8 @@ body {
 @media (max-width: 900px) {
   .profile-dashboard-container {
     flex-direction: column;
+    height: auto; /* Allow natural height on mobile */
+    overflow: visible;
   }
 
   .profile-sidebar {
@@ -208,45 +230,65 @@ body {
     width: 100%;
     height: auto;
     justify-content: flex-start;
-    padding: 13px 0 2px 0;
+    padding: 13px 20px 10px 20px;
     align-items: flex-start;
+    overflow-x: auto;
+    overflow-y: visible;
   }
 
   .profile-main-content {
     border-radius: 0 0 18px 18px;
     margin: 0;
-    padding: 24px 5vw 24px 5vw;
+    padding: 20px 5vw;
+    height: auto;
   }
 
   .profile-pic-username {
     flex-direction: row;
-    gap: 20px;
+    gap: 15px;
     margin-bottom: 0;
+    margin-right: 20px;
   }
 
   .profile-avatar-big {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
+  }
+
+  .profile-username-big {
+    font-size: 1.2rem;
+    text-align: left;
+  }
+
+  .profile-about {
+    text-align: left;
+    font-size: 1rem;
   }
 
   .profile-side-nav {
     flex-direction: row;
-    gap: 0;
+    flex-wrap: wrap;
+    gap: 8px;
     width: auto;
     margin: 0;
+    flex: 1;
   }
 
   .side-nav-btn {
     flex-direction: column;
-    font-size: 0.91rem;
-    gap: 6px;
-    padding: 4px 7px 3px 7px;
+    font-size: 0.9rem;
+    gap: 4px;
+    padding: 6px 10px;
   }
 
   .edit-profile-btn {
-    margin: 8px 0 0 18px;
-    padding: 8px 18px;
-    font-size: 0.98rem;
+    margin: 0 0 0 auto;
+    padding: 8px 16px;
+    font-size: 0.95rem;
+  }
+
+  .profile-tab-pane {
+    height: auto;
   }
 }
 
@@ -257,10 +299,6 @@ body {
 
   .profile-tab-title {
     font-size: 1.15rem;
-  }
-
-  .profile-dashboard-container {
-    min-height: 80vh;
   }
 }
 
@@ -1564,4 +1602,530 @@ input[type="file"]#profilePicture {
   .comments-list {
     max-height: 150px;
   }
+}
+
+
+/* ========================================
+   MARKETPLACE SELLING STYLES
+   ======================================== */
+
+/* Sell Collection Button */
+.btn-sell-collection {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.65rem 1rem;
+    background: linear-gradient(135deg, #f96c2b 0%, #e55a1a 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 2px 8px rgba(249, 108, 43, 0.3);
+}
+
+.btn-sell-collection:hover {
+    background: linear-gradient(135deg, #e55a1a 0%, #d44a0a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(249, 108, 43, 0.4);
+}
+
+.btn-sell-collection:active {
+    transform: translateY(0);
+}
+
+/* Cancel Listing Button */
+.btn-cancel-listing {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.65rem 1rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-cancel-listing:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Listing Badge */
+.listing-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(46, 204, 113, 0.95);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Sell Modal - COMPLETE WITH PAYMENT METHODS */
+.sell-modal {
+    display: none;
+    position: fixed;
+    z-index: 10020;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    animation: fadeIn 0.3s ease;
+    overflow-y: auto;
+    padding: 20px 0;
+}
+
+.sell-modal-content {
+    background-color: white;
+    margin: 50px auto;
+    padding: 2.5rem;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    animation: slideUp 0.3s ease;
+    position: relative;
+}
+
+.sell-modal-content h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #181818;
+}
+
+.sell-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.sell-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.sell-form-group input,
+.sell-form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+.sell-form-group input:focus,
+.sell-form-group textarea:focus {
+    outline: none;
+    border-color: #f96c2b;
+}
+
+.sell-form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Payment Methods Container */
+#paymentMethodsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    border: 1px dashed #e0e0e0;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+#paymentMethodsContainer:empty {
+    padding: 2rem;
+    text-align: center;
+    color: #999;
+}
+
+#paymentMethodsContainer:empty::after {
+    content: 'No payment methods added yet. Click "Add Payment Method" below.';
+}
+
+.payment-method-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    position: relative;
+    transition: all 0.3s;
+}
+
+.payment-method-item:hover {
+    border-color: #f96c2b;
+    box-shadow: 0 2px 8px rgba(249, 108, 43, 0.1);
+}
+
+.payment-type,
+.payment-details,
+.payment-name {
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+.payment-type:focus,
+.payment-details:focus,
+.payment-name:focus {
+    outline: none;
+    border-color: #f96c2b;
+}
+
+.payment-type {
+    background: white;
+    cursor: pointer;
+}
+
+.btn-remove-payment {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.btn-remove-payment:hover {
+    background: #c82333;
+    transform: scale(1.15);
+}
+
+.btn-add-payment {
+    width: 100%;
+    padding: 0.85rem;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+}
+
+.btn-add-payment:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-add-payment::before {
+    content: '+';
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.sell-form-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.btn-submit-listing {
+    flex: 1;
+    padding: 0.85rem;
+    background: linear-gradient(135deg, #f96c2b 0%, #e55a1a 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-submit-listing:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(249, 108, 43, 0.4);
+}
+
+.btn-submit-listing:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-cancel-modal {
+    flex: 1;
+    padding: 0.85rem;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-cancel-modal:hover {
+    background: #5a6268;
+}
+
+/* Toast Styles */
+.toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    z-index: 20000;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-family: 'Poppins', sans-serif;
+}
+
+.toast.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+.toast.success {
+    background-color: #28a745;
+}
+
+.toast.error {
+    background-color: #dc3545;
+}
+
+.toast.info {
+    background-color: #17a2b8;
+}
+
+@keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
+
+@keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .sell-modal {
+        padding: 10px 0;
+    }
+
+    .sell-modal-content {
+        margin: 20px auto;
+        padding: 1.5rem;
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .sell-modal-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .payment-method-item {
+        padding: 1rem;
+        padding-right: 3rem;
+    }
+
+    .btn-remove-payment {
+        width: 28px;
+        height: 28px;
+        font-size: 1.1rem;
+    }
+
+    #paymentMethodsContainer {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sell-modal-content {
+        padding: 1rem;
+    }
+
+    .payment-type,
+    .payment-details,
+    .payment-name {
+        font-size: 0.85rem;
+        padding: 0.6rem;
+    }
+
+    .sell-form-buttons {
+        flex-direction: column;
+    }
+
+    .btn-submit-listing,
+    .btn-cancel-modal {
+        width: 100%;
+    }
+}
+
+
+/* Hide confirmation modal by default */
+#confirmPaymentModal {
+  display: none;
+}
+
+#confirmPaymentModal.show {
+  display: flex;
+}
+
+/* Confirmation Modal Styles */
+.confirm-modal {
+  display: none;
+  position: fixed;
+  z-index: 10040;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.8);
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-modal.show {
+  display: flex !important;
+}
+
+.confirm-modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  padding: 2rem;
+}
+
+.confirm-modal-content h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: #181818;
+}
+
+.transaction-details {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+.transaction-details p {
+  margin: 0.75rem 0;
+  font-size: 0.95rem;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn-reject {
+  flex: 1;
+  padding: 1rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-confirm-green {
+  flex: 1;
+  padding: 1rem;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
 }

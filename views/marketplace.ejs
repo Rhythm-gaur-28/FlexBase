@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketplace | FlexBase</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/marketplace.css">
+  <link rel="stylesheet" href="/css/footer.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  
+  <div class="marketplace-container">
+    <div class="marketplace-header">
+      <h1>FlexBase Marketplace</h1>
+      <p>Buy and sell sneaker collections with the community</p>
+    </div>
+    
+    <div class="marketplace-filters">
+      <input type="text" id="brandFilter" placeholder="Search by brand..." />
+      <input type="number" id="minPrice" placeholder="Min price" />
+      <input type="number" id="maxPrice" placeholder="Max price" />
+      <select id="sortFilter">
+        <option value="-createdAt">Newest First</option>
+        <option value="createdAt">Oldest First</option>
+        <option value="price">Price: Low to High</option>
+        <option value="-price">Price: High to Low</option>
+      </select>
+      <button onclick="applyFilters()" class="filter-btn">Apply Filters</button>
+    </div>
+    
+    <div id="listings-grid" class="listings-grid">
+      <p class="loading">Loading listings...</p>
+    </div>
+    
+    <!-- Listing Detail Modal -->
+    <div id="listingModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="listingDetails"></div>
+      </div>
+    </div>
+
+    <!-- Purchase Payment Modal - NEW -->
+    <div id="purchaseModal" class="purchase-modal">
+      <div class="purchase-modal-overlay" onclick="closePurchaseModal()"></div>
+      <div class="purchase-modal-content">
+        <button class="modal-close-btn" onclick="closePurchaseModal()">
+          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+        
+        <h2>Complete Purchase</h2>
+        
+        <div class="purchase-info">
+          <div class="purchase-item-preview">
+            <img id="purchaseItemImage" src="" alt="Item">
+            <div>
+              <h3 id="purchaseItemTitle"></h3>
+              <p class="purchase-price" id="purchaseItemPrice"></p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="purchase-section">
+          <h3>Step 1: Select Payment Method</h3>
+          <p class="instruction-text">Choose how you want to pay the seller</p>
+          <div id="paymentOptionsContainer" class="payment-options">
+            <!-- Payment options will be loaded here -->
+          </div>
+        </div>
+        
+        <div class="purchase-section" id="paymentDetailsSection" style="display: none;">
+          <h3>Step 2: Make Payment</h3>
+          <div id="selectedPaymentDetails" class="payment-details-display"></div>
+          
+          <div class="payment-proof-section">
+            <label>Transaction ID / Reference Number (Optional)</label>
+            <input type="text" id="transactionId" placeholder="Enter transaction ID if available" />
+            
+            <label>Payment Notes (Optional)</label>
+            <textarea id="paymentNotes" placeholder="Any additional information for the seller..." rows="3"></textarea>
+          </div>
+        </div>
+        
+        <div class="purchase-actions">
+          <button type="button" class="btn-cancel-modal" onclick="closePurchaseModal()">Cancel</button>
+          <button type="button" id="confirmPaymentBtn" class="btn-confirm-payment" style="display: none;" onclick="submitPurchase()">
+            ✓ I've Made the Payment
+          </button>
+        </div>
+        
+        <input type="hidden" id="currentListingId" />
+        <input type="hidden" id="selectedPaymentMethodIndex" />
+      </div>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script src="/js/marketplace.js"></script>
+  
+</body>
+</html>
